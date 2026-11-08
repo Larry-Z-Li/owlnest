@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import list_header, search_box %}
+{% from "_archived.html" import archived_table %}
+{% block title %}Archive{% endblock %}
+
+{% block content %}
+{{ list_header("Archive", None, None) }}
+<p>
+  Properties, maintenance requests, transactions and notes you archive (delete) are kept here, so nothing is lost by mistake.
+  Click “Restore” to bring one back, or “Delete forever” to remove it for good. (Earlier backups still have it.)
+</p>
+<p class="muted">
+  A property's own archived leases, insurance, photos and files are at the bottom of its page, under “Archives”.
+  Files removed from a request or transaction are on its page.
+</p>
+{{ search_box(url_for("archive.index"), search, "Search archived records") }}
+
+{% set found = namespace(any=false) %}
+{% for heading, items in sections %}
+  {% if items %}
+    {% set found.any = true %}
+    <section class="card">
+      <h2>{{ heading }}</h2>
+      {{ archived_table(items, url_for('archive.index', q=search) if search else url_for('archive.index')) }}
+    </section>
+  {% endif %}
+{% endfor %}
+
+{% if not found.any %}
+  <p class="empty">{% if search %}No archived records match “{{ search }}”.{% else %}The Archive is empty.{% endif %}</p>
+{% endif %}
+{% endblock %}

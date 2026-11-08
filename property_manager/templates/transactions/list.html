@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "_macros.html" import llc_options, property_options %}
+{% from "transactions/_ledger.html" import signed, total, month_summary %}
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="page-header page-header-together">
+  <div>
+    <h1>Transactions</h1>
+    <p class="list-summary">
+      <span class="wide-only">{{ count }} {{ "transaction" if count == 1 else "transactions" }} · </span>
+      In <strong class="money-in">{{ money_in|money }}</strong> ·
+      Out <strong>{{ money_out|abs|money }}</strong> ·
+      Net <strong>{{ total(money_in + money_out) }}</strong>
+    </p>
+  </div>
+  <div class="page-actions">
+    {% if bank_on %}
+      <a class="button button-secondary button-round-on-phone button-with-count" href="{{ url_for('bank.index') }}" aria-label="From the bank{% if bank_waiting %}, {{ bank_waiting }} waiting{% endif %}">
+        {{- icon("bank", 18) }}<span>From the bank</span>{% if bank_waiting %}<b class="button-count">{{ bank_waiting }}</b>{% endif -%}
+      </a>
+    {% endif %}
+    <a class="button button-round-on-phone" href="{{ url_for('transactions.new') }}">{{ icon("plus", 18) }}<span>Add a transaction</span></a>
+  </div>
+</div>
+
+{# A menu shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+<form class="filter-pills" method="get" action="{{ url_for('transactions.index') }}" data-auto-filter{% if filtering %} data-active{% endif %}>
+  <input type="search" name="q" value="{{ search }}" aria-label="Search tenant or details" placeholder="Search tenant or details">
+  {# On a phone, the menus are folded away under "Filters", unless one is in use. #}
+  <details class="more-filters" open>
+    <summary>{{ icon("filter", 18) }} Filters</summary>
+    <div class="more-filters-fields">
+      <select name="property_id" aria-label="Property">
+        <option value="">All properties</option>
+        {{ llc_options(llcs, property_id) }}
+        {{ property_options(property_groups, property_id) }}
+        <option value="none"{% if property_id == "none" %} selected{% endif %}>Not for one property</option>
+      </select>
+      <select name="category" aria-label="Purpose">
+        <option value="">All purposes</option>
+        {% for group, options in category_groups %}
+          <optgroup label="{{ group }}">
+            {% for value, text in options %}<option value="{{ value }}"{% if category == value %} selected{% endif %}>{{ text }}</option>{% endfor %}
+          </optgroup>
+        {% endfor %}
+      </select>
+      <select name="period" aria-label="Period">
+        {% for value, text in periods %}<option value="{{ value }}"{% if period == value %} selected{% endif %}>{{ text }}</option>{% endfor %}
+      </select>
+      <span class="period-dates"{% if period != "custom" %} hidden{% endif %}>
+        <label>From <input type="date" name="from" value="{{ start.isoformat() if period == 'custom' and start else '' }}"></label>
+        <label>to <input type="date" name="to" value="{{ end.isoformat() if period == 'custom' and end else '' }}"></label>
+      </span>
+    </div>
+  </details>
+  <button type="submit" class="button button-small" data-show-button>Show</button>
+  {% if filtering %}<a class="filters-clear" href="{{ url_for('transactions.index') }}">Show all</a>{% endif %}
+</form>
+
+{% if months %}
+  {% for month in months %}
+    <details class="month"{% if month.open %} open{% endif %}>
+      {{ month_summary(month) }}
+      <div class="month-rows">
+        {% for item in month.rows %}
+          {% set icon_name, chip = look_of(item.category) %}
+          <a class="ledger-row" href="{{ url_for('transactions.edit', transaction_id=item.id) }}">
+            <span class="chip {{ chip }}">{{ icon(icon_name) }}</span>
+            <span class="ledger-text">
+              <span class="ledger-title">
+                <span class="ledger-what"{% if item.details %} title="{{ item.details }}"{% endif %}><strong>{{ item.category }}</strong>{% if item.details %}<span class="ledger-details"><span class="wide-only"> · </span>{{ item.details }}</span>{% endif %}</span>
+                {% if "CHECK:" in item.details %}<span class="tag tag-check">Check</span>{% endif %}
+                {% if item.id in from_the_bank %}<span class="tag tag-bofa">BOFA</span>{% endif %}
+                {% if item.id in ai_linked %}<span class="tag tag-ai">AI linked</span>{% endif %}
+              </span>
+              <span class="ledger-meta">
+                {{- item.property.nickname if item.property else item.llc.name if item.llc else "Not for one property" }} · <span class="nowrap">{{ item.transaction_date|short_date }}</span>
+                {%- if item.tenant_name %} · {{ item.tenant_name }}{% endif %}
+                {%- if item.request %} · Request: {{ item.request.title }}{% endif -%}
+              </span>
+            </span>
+            <span class="ledger-amount{{ ' money-in' if item.amount_cents > 0 }}">{{ signed(item.amount_cents) }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </details>
+  {% endfor %}
+{% else %}
+  <p class="empty">No transactions to show.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='filters.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Help{% endblock %}
+
+{% block content %}
+{% include "_help_language.html" %}
+<h1>Help</h1>
+<p>Answers to common questions. Click a topic to jump to it.</p>
+
+<nav class="card help-topics" aria-label="Help topics">
+  <ul>
+    <li><a href="#opening-and-closing">Opening and closing the app</a></li>
+    <li><a href="#signing-in">Signing in, and passwords</a></li>
+    <li><a href="#getting-around">Finding your way around</a></li>
+    <li><a href="#alerts">“Needs attention” and reminders</a></li>
+    <li><a href="#properties-and-leases">Properties and leases</a></li>
+    <li><a href="#walkthroughs-and-extensions">Walkthroughs and extending a lease</a></li>
+    <li><a href="#ending-leases">Ending a lease, and previous leases</a></li>
+    <li><a href="#insurance">Insurance</a></li>
+    <li><a href="#transactions">Transactions: money in and out</a></li>
+    <li><a href="#maintenance">Maintenance requests</a></li>
+    <li><a href="#reports">Reports for your accountant</a></li>
+    <li><a href="#tenant-portal">The tenant portal</a></li>
+    <li><a href="#files">Attaching files</a></li>
+    <li><a href="#notes">Notes</a></li>
+    <li><a href="#archive">Deleting things, and getting them back</a></li>
+    <li><a href="#backups">Backups</a></li>
+    <li><a href="#problems">If something looks wrong</a></li>
+  </ul>
+</nav>
+
+<section class="card" id="opening-and-closing">
+  <h2>Opening and closing the app</h2>
+  <ul>
+    {% if config.PUBLIC_ADDRESS %}
+    <li><strong>On any computer or phone,</strong> open <strong>{{ config.PUBLIC_ADDRESS }}</strong> in the web browser, and sign in with your name and password (see <a href="#signing-in">Signing in</a>). Bookmark it to find it again. On an iPhone, tap the Share button, then “Add to Home Screen”, to get an icon for it.</li>
+    {% endif %}
+    <li><strong>On a computer with the app installed,</strong> double-click the {{ app_name }} icon (a white owl on a blue square) on your Desktop. The app opens in your web browser after a few seconds, without signing in.</li>
+    <li>The computer or phone needs to be connected to the internet. Your records are kept on the app's server, so everyone sees the same records. If someone else just changed something, reload the page to see it.</li>
+    <li><strong>To close it</strong> in a web browser, just close the tab. With the app installed, click “Close the app” at the top right of any page; on a Mac you can also right-click {{ app_name }} in the Dock and choose Quit. Your records stay on the server.</li>
+    <li>Everything is saved as you go, so there's never a “save” step before closing.</li>
+    <li>It's fine to leave the app open all the time.</li>
+  </ul>
+</section>
+
+<section class="card" id="signing-in">
+  <h2>Signing in, and passwords</h2>
+  <ul>
+    <li>Type your name and your password. Capitals don't matter in the name, but they do in the password.</li>
+    <li>Each computer or phone stays signed in for 30 days after you last used the app on it, so you rarely need to type the password.</li>
+    <li>On a computer or phone that other people use, click <strong>Sign out</strong> at the top right when you're done.</li>
+    <li><strong>Forgot your password?</strong> Someone else who can sign in can give you a new one: in <a href="{{ url_for('settings.index') }}#people">Settings</a>, under “People who can sign in”, they click “New password”. (A computer with the app installed can do this too.)</li>
+    <li>After 10 wrong passwords in a row, that name is <strong>locked</strong>, so nobody can keep guessing. Computers and phones already signed in keep working, and the Home page says it's locked. Ask whoever looks after the app to unlock it (it's the “Unlock” button in Settings). A new password unlocks it too.</li>
+    <li><strong>To let someone else sign in,</strong> click “Add a person” in Settings. They can see and change all your records. Tell them their password in person or by phone. “Remove” stops them signing in.</li>
+    <li><strong>Lost your phone?</strong> Change your password in Settings (“Change my password”). That signs you out on every other computer and phone.</li>
+  </ul>
+</section>
+
+<section class="card" id="getting-around">
+  <h2>Finding your way around</h2>
+  <ul>
+    <li>The menu at the top of every page leads to each screen. Archive, Settings and Help are the smaller links at the top right.</li>
+    <li>The <strong>Home</strong> page starts with a blue band: what your homes are worth, and buttons to add a transaction or a repair request. Under it, four boxes show this month's rent, this year's net cash flow, open repairs, and how many new deposits the latest fetch from the bank brought in (click one to go there). Then come your properties, open repair requests, what needs attention, and when your records were last backed up.</li>
+    <li><strong>Properties</strong> lists your homes. Click one to see its current lease, its insurance, its maintenance requests and its reminders.</li>
+    <li><strong>Transactions</strong> is every bit of money in and out. <strong>Maintenance</strong> is every repair request, from you or from tenants.</li>
+    <li>Click a name in a list to open that record. Its page has <strong>Edit</strong> and <strong>Archive</strong> buttons.</li>
+  </ul>
+</section>
+
+<section class="card" id="alerts">
+  <h2>“Needs attention” and reminders</h2>
+  <ul>
+    <li>“Needs attention” on the <strong>Home</strong> page lists everything that needs you: new requests from tenants, leases and insurance ending in the next 60 days, leases past their end date, and your own reminders. Items marked with a red <strong>Now</strong> are due; the others are coming up.</li>
+    <li>When something needs attention, a yellow (or red) “needs attention” button appears at the top of every page. It opens <strong>Reminders</strong>, which lists all of it. Click one to open its page. Rent, leases and insurance go away by themselves once they're taken care of.</li>
+    <li>Reminders can't be dismissed: each stays until it's taken care of. Mark your own reminders <strong>Done</strong>. A lease's reminder goes away when you extend or end the lease; an insurance's when you change its dates for the renewed policy (or add the new policy and archive the old one). A property's reminders are also at the top of its page.</li>
+    <li>Leases and insurance remind you by themselves. For anything else with a date, such as property tax, click “Add a reminder” on the Home page or on a property's page. When it's done, click <strong>Done</strong>; a reminder that repeats moves to its next date by itself.</li>
+  </ul>
+</section>
+
+<section class="card" id="properties-and-leases">
+  <h2>Properties and leases</h2>
+  <ul>
+    <li>To add a home, open <a href="{{ url_for('properties.index') }}">Properties</a> and click “Add a property”.</li>
+    <li>Homes are listed by <strong>LLC</strong>, with the ones in no LLC at the end. “Add LLC” adds one, which is just a name. Choose a home's LLC when you add or edit it.</li>
+    <li>A property's page shows its <strong>photos</strong> as a slideshow: click the arrows, or swipe on a phone. To add or remove photos, click “Edit photos” (or “Add photos”) at its top right. iPhone photos are fine, and you can choose several at once. A removed photo goes to the Archive.</li>
+    <li>A property's page shows its bedrooms, bathrooms and square feet. Click “Edit property” to fill them in. If its value is looked up from RentCast (see below), RentCast fills in any you left empty.</li>
+    <li>Each property has <strong>one current lease</strong>. On the property's page, click “Add a lease” and fill in the tenants' names, their phone and email, the dates, the rent, and the deposit. Leave the end date empty for month-to-month.</li>
+    <li>Adding a lease also makes the tenants' own link to the tenant portal (see below).</li>
+    <li>Click “Open lease” to see everything about it: the tenant portal link, the walkthroughs, extensions, and the lease's documents, such as the signed lease.</li>
+    <li>To see a home's <strong>estimated value</strong>, click “Edit property” and tick “Look up its estimated value each month”. It's looked up from RentCast about once a month and shown on the property's page; the Home page adds them up. It needs the full address, including the ZIP code. It's an estimate from online data, not an appraisal.</li>
+  </ul>
+</section>
+
+<section class="card" id="walkthroughs-and-extensions">
+  <h2>Walkthroughs and extending a lease</h2>
+  <ul>
+    <li>Each lease has two <strong>walkthroughs</strong>: <strong>Move-in</strong> (the home before the tenants arrived) and <strong>Move-out</strong> (after they left). On the lease's page, click “Add move-in walkthrough”, fill in the date and notes, and attach the report and photos.</li>
+    <li>To <strong>extend</strong> a lease, click “Extend lease”, choose the new end date, and attach the signed extension agreement. If the rent is changing too, type the <strong>New monthly rent</strong> and the day it starts; leave it empty to keep the rent as it is. The lease's page keeps a list of every extension.</li>
+    <li>A lease's page has a <strong>Rent</strong> list: each monthly rent and the date it starts. The app uses the one in effect today, so a new rent takes over by itself on its date. Click <strong>Add a rent change</strong> for a raise during the lease, <strong>Edit</strong> to fix one rent, or <strong>Remove</strong> to take one off. Your transactions don't change: you still add the rent you receive.</li>
+    <li><strong>Rent reminders:</strong> from the day rent is due (each month, on the day of the month the lease started), a reminder shows on Home and at the top of the lease's page until the rent and any late fee are paid in full. Add each payment as a transaction, with the purpose Rental Income or Late Fees and the day it was really paid. Even if you add it later, the late fee goes by that date. Each rent has its own late fee, added once: 5% of the rent when it's 5 days late, unless you change it.</li>
+    <li>Rent that's due shows in <strong>yellow</strong> until its late fee is added, 5 days late unless you changed it, and in <strong>red</strong> from then on.</li>
+    <li>To let it go, click <strong>Waive late fee</strong> or <strong>Waive rest of rent</strong> on the reminder.</li>
+  </ul>
+</section>
+
+<section class="card" id="ending-leases">
+  <h2>Ending a lease, and previous leases</h2>
+  <ul>
+    <li>When tenants leave, click “End lease” and choose their last day. If that's before the lease's end date, the app warns you and asks you to confirm.</li>
+    <li>An ended lease moves to the property's <strong>Previous leases</strong> (a button on the property's page), where you can still open it, and the tenants' portal link shows a “sorry” page.</li>
+    <li>Ended a lease by mistake? Open it under Previous leases and click <strong>Revive lease</strong>. It becomes current again, and the tenants' same link works again.</li>
+    <li>“Delete this lease” (at the bottom of a lease's page) is only for a lease added by mistake. It moves to the Archive.</li>
+  </ul>
+</section>
+
+<section class="card" id="insurance">
+  <h2>Insurance</h2>
+  <ul>
+    <li>Each property can have several insurance policies, such as property and renters insurance. On the property's page, click “Add insurance”, fill in the kind, company, policy number and dates, and attach the policy.</li>
+    <li>You're reminded on the Home page 60 days before a policy ends. When you renew it, change its dates (and attach the new policy), or add the new policy and archive the old one.</li>
+    <li>Insurance here is only a record and a reminder: it isn't linked to any money.</li>
+  </ul>
+</section>
+
+<section class="card" id="transactions">
+  <h2>Transactions: money in and out</h2>
+  <ul>
+    <li>Everything goes in <a href="{{ url_for('transactions.index') }}">Transactions</a>: rent, repairs, insurance, the mortgage, anything. Click “Add a transaction”.</li>
+    <li>Choose <strong>Money in</strong> or <strong>Money out</strong>, the amount, the property, and what it was for (the <strong>Purpose</strong>, such as Rental Income or Repair &amp; Maintenance). Money out shows as a negative amount, in red.</li>
+    <li>Leave <strong>Tenant</strong> empty and it's filled in from the property's lease on that date.</li>
+    <li>For money about an LLC itself, such as its accounting fee, leave <strong>Property</strong> empty and choose the <strong>LLC</strong>.</li>
+    <li><strong>From the bank:</strong> once the bank is connected, the button at the top of Transactions shows your bank's activity (up to the past 13 months), money in and out, and it's fetched once a day (Settings has a <strong>Fetch now</strong> button). You can't change anything there. Click <strong>Enter into Transactions</strong> on one you want in your books: the date, amount, payment method and memo are filled in, and you choose the property and purpose. Once saved, it's in Transactions with a <strong>BOFA</strong> tag, and From the bank marks it <strong>In Transactions</strong>. A transaction from the bank can't be archived. <strong>Return to From the bank</strong> takes it out of Transactions and puts it back on From the bank, where you can enter it again. Entries marked <strong>Linked with AI</strong> were matched to transactions you typed in yourself; click it to see the transaction, or <strong>Unlink</strong> to undo it. “May already be entered” means you may have typed that one in yourself. The <strong>Accounts</strong> button lists the accounts connected, and <strong>Add account</strong> connects more, under the same login or a different one. The connection can only read: it can't move money. Your bank asks you to renew it once a year, and Home reminds you a month ahead.</li>
+    <li>For a bill about a repair, choose the <strong>Maintenance request</strong>. The transaction then takes on the request's type, and the request shows what it has cost so far.</li>
+    <li>Attach the receipt. The list at the top can show one property, one purpose, or some dates, with the totals underneath. Click a date to change a transaction.</li>
+  </ul>
+</section>
+
+<section class="card" id="maintenance">
+  <h2>Maintenance requests</h2>
+  <ul>
+    <li><a href="{{ url_for('maintenance.index') }}">Maintenance</a> lists every request, newest first. Click “Add a request”, or a request to change it.</li>
+    <li>Each request has a property, a type (such as Repair &amp; Maintenance or Appliances &amp; Furnishings), the company fixing it, pictures and receipts, and a status: <strong>Open</strong>, <strong>In progress</strong> or <strong>Closed</strong>. Open and in-progress requests are also on the Home page.</li>
+    <li>To change a status, click it, right in the list (on Home too), and pick another. It's saved at once. A request that no longer belongs in the list, such as one you closed, slides away; click <strong>Undo</strong> in the message at the bottom to bring it back.</li>
+    <li>Requests from tenants (sent from the tenant portal) say so, and are marked “New from tenant” until you open them. Tenants see the status you choose.</li>
+    <li>To add the bill for a request, open it and click “Add a transaction for this request”. A request can have several transactions.</li>
+  </ul>
+</section>
+
+<section class="card" id="reports">
+  <h2>Reports for your accountant</h2>
+  <ul>
+    <li><a href="{{ url_for('reports.index') }}">Reports</a> shows your cash flow: every transaction added up by purpose, with a total under each group (income, operating expenses, mortgage and loan), your net operating income, and your net cash flow.</li>
+    <li>Choose all properties, one LLC or one property, the dates, and whether the columns are <strong>months</strong>, <strong>properties</strong> or <strong>LLCs</strong>. The report updates as you choose. An LLC's report has its homes' money and the money for the LLC itself.</li>
+    <li>Charts of the same money are under the report. “See charts” jumps down to them.</li>
+    <li>Transfers (such as security deposits) are listed at the bottom but don't count in the cash flow.</li>
+    <li>For your accountant, click <strong>Download Excel</strong> (the report, plus a list of every transaction in it) or <strong>Download PDF</strong> (ready to print or email).</li>
+  </ul>
+</section>
+
+<section class="card" id="tenant-portal">
+  <h2>The tenant portal</h2>
+  <ul>
+    <li>Every lease has its own link to the tenant portal, where the tenants can send you repair requests (with photos) from their phone, and see the status of each one. Their requests appear under Maintenance.</li>
+    <li>On the lease's page, under <strong>Tenant portal</strong>, click “Copy link” and paste it into a text message, or click “Email it to the tenants”. There's no password, so only send it to the tenants.</li>
+    <li>If a link reaches the wrong person, click “Make a new link” and send the new one. The old link stops working.</li>
+    <li>When the lease ends, the link shows a “sorry” page. Reviving the lease turns it back on.</li>
+  </ul>
+</section>
+
+<section class="card" id="files">
+  <h2>Attaching files</h2>
+  <ul>
+    <li>Leases, walkthroughs, extensions, insurance, requests and transactions can have files attached: PDFs or photos (iPhone photos are fine), up to 20 MB each. You can choose several at once.</li>
+    <li>Click a file to open it, or “Download” to save a copy. “Remove” moves it to the Archive.</li>
+    <li>Files are included in every backup.</li>
+  </ul>
+</section>
+
+<section class="card" id="notes">
+  <h2>Notes</h2>
+  <p>Click <strong>Notes</strong> at the top right to keep anything as plain text. Type it and click <strong>Add note</strong>. <strong>Archive</strong> moves a note to the Archive page, where you can restore it or delete it forever.</p>
+</section>
+
+<section class="card" id="archive">
+  <h2>Deleting things, and getting them back</h2>
+  <ul>
+    <li>Nothing is ever really deleted. The <strong>Archive</strong> (or <strong>Remove</strong>) button hides a record and keeps it:
+      archived properties, maintenance requests and transactions are on the <a href="{{ url_for('archive.index') }}">Archive</a> page;
+      a property's own archived leases, insurance, photos and files are at the bottom of its page, under <strong>Archives</strong>;
+      and files removed from a request or transaction are on its page.</li>
+    <li>Right after you archive something, a message with an <strong>Undo</strong> button appears.</li>
+    <li>Archiving a property also archives its leases, insurance, requests and reminders, and restoring it brings them back. Its transactions stay where they are: the money still counts, even after a house is sold.</li>
+    <li>To bring something back, click “Restore” next to it. A transaction linked to a request that's in the Archive asks first: restoring it now removes the link, so restore the request first to keep it.</li>
+    <li>To get rid of something for good, click <strong>Delete forever</strong> next to it. This can't be undone (earlier backups still have it). Deleting a property forever also deletes its leases, insurance, reminders and photos, but only once its requests and transactions have been deleted forever.</li>
+  </ul>
+</section>
+
+<section class="card" id="backups">
+  <h2>Backups</h2>
+  <ul>
+    <li>The app backs up everything by itself, every day, on its server.</li>
+    <li>Every computer with the app also saves a copy of the newest backup once a day while the app is open, in the “Property Manager Backups” folder in its Documents folder. So your records are safe even if the server is lost.</li>
+    <li>It keeps one backup from every other day for the last 10 days, and one from each of the 5 months before this one. Older ones are deleted.</li>
+    <li>To make an extra backup at any time, click “Back up now” in <a href="{{ url_for('settings.index') }}#backups">Settings</a>.</li>
+    <li>If no backup has worked for 7 days, the Home page shows a warning.</li>
+    <li>To go back to an older backup, ask whoever looks after the app. It's done on the server.</li>
+  </ul>
+</section>
+
+<section class="card" id="problems">
+  <h2>If something looks wrong</h2>
+  <ul>
+    <li><strong>A red “Nothing was saved yet” message</strong> at the top of a form means something needs fixing. Look for red writing under a box, correct it, and click the button again. Anything you typed is still there.</li>
+    <li><strong>A “Something went wrong” page:</strong> go back and try again. If it keeps happening, write down what you were doing and ask for help.</li>
+    <li><strong>“Can't reach your records right now”:</strong> check that the computer is connected to the internet, then reload the page.</li>
+    <li><strong>“The app's server is restarting”:</strong> wait a minute or two, then reload the page. This happens after the app is updated.</li>
+    <li><strong>The app won't open:</strong> type <strong>127.0.0.1:8642</strong> into your browser's address bar. If that doesn't work, restart the computer and try again.</li>
+    <li><strong>Something disappeared:</strong> check the <a href="{{ url_for('archive.index') }}">Archive</a> page.</li>
+  </ul>
+</section>
+{% endblock %}

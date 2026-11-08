@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon, kind_icons %}
+{% from "_macros.html" import property_options %}
+{% block title %}Reminders{% endblock %}
+
+{# One row. Clicking it opens the page it's about: the lease, the insurance, and so on. #}
+{% macro reminder_row(alert) %}
+  {% set name, chip = kind_icons.get(alert.kind, ("bell", "chip-gold")) %}
+  <div class="ledger-row reminder-row">
+    <a class="ledger-row-main" href="{{ alert.link }}">
+      <span class="chip {{ 'chip-red' if alert.urgent else 'chip-gold' if alert.yellow else chip }}">{{ icon(name) }}</span>
+      <span class="ledger-text">
+        <span class="ledger-title">
+          <span class="ledger-what"><strong>{{ alert.link_text }}</strong></span>
+          {% if alert.urgent %}<span class="tag tag-late tag-small">Now</span>{% elif alert.yellow %}<span class="tag tag-warning tag-small">Due</span>{% endif %}
+          {% if alert.repeats %}<span class="tag tag-small">{{ alert.repeats }}</span>{% endif %}
+        </span>
+        {% if alert.second_line %}<span class="ledger-meta">{{ alert.second_line }}</span>{% endif %}
+      </span>
+    </a>
+    {% if alert.button %}
+      {% set label, address = alert.button %}
+      <form method="post" action="{{ address }}" class="inline">
+        <button type="submit" class="button button-small button-secondary">{{ label }}</button>
+      </form>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="page-header page-header-together">
+  <div>
+    <h1>Reminders</h1>
+    <p class="list-summary">
+      {% if needs_attention %}<strong>{{ needs_attention|length }}</strong> need{{ "s" if needs_attention|length == 1 }} attention{% else %}Nothing needs attention{% endif %}
+      {%- if later %} · <strong>{{ later|length }}</strong> coming up later{% endif %}
+    </p>
+  </div>
+  <a class="button button-round-on-phone" href="{{ url_for('reminders.new') }}">{{ icon("plus", 18) }}<span>Add a reminder</span></a>
+</div>
+
+{# The menu shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+<form class="filter-pills" method="get" action="{{ url_for('reminders.index') }}" data-auto-filter{% if property_id %} data-active{% endif %}>
+  <select name="property_id" aria-label="Property">
+    <option value="">All properties</option>
+    {{ property_options(property_groups, property_id) }}
+  </select>
+  <button type="submit" class="button button-small" data-show-button>Show</button>
+  {% if property_id %}<a class="filters-clear" href="{{ url_for('reminders.index') }}">Show all</a>{% endif %}
+</form>
+
+{% if needs_attention %}
+  <section class="reminder-group">
+    <h2 class="month-name">Needs attention</h2>
+    <div class="month-rows">
+      {% for alert in needs_attention %}{{ reminder_row(alert) }}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if later %}
+  <section class="reminder-group">
+    <h2 class="month-name">Coming up later</h2>
+    <div class="month-rows">
+      {% for alert in later %}{{ reminder_row(alert) }}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if not needs_attention and not later %}
+  <p class="empty">
+    {% if property_id %}Nothing here for this property.{% else %}Nothing to remember right now.{% endif %}
+    Click “Add a reminder” for something like property tax or an inspection.
+  </p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='filters.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, money_field, textarea_field, form_problems, record_kind %}
+{% from "_attachments.html" import files_field %}
+{% block title %}Extend lease{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('leases.detail', lease_id=lease.id) }}">← Back to the lease</a></p>
+{{ record_kind("Lease") }}
+<h1>Extend lease <span class="subtitle">{{ lease.tenant_names }}, {{ lease.property.nickname }}</span></h1>
+
+<section class="card">
+  <p>The lease now ends on <strong>{{ lease.end_date|nice_date if lease.end_date else "no date (month-to-month)" }}</strong>.</p>
+  {{ form_problems(form) }}
+  <form method="post" enctype="multipart/form-data">
+    {{ text_field(form, "new_end_date", "New end date", type="date", size="short", required=True) }}
+    <div class="field-row">
+      {{ money_field(form, "new_rent", "New monthly rent", help="The rent is " ~ lease.rent_cents|money ~ " a month now. Leave this empty to keep it.") }}
+      {{ text_field(form, "rent_starts_on", "New rent starts on", type="date", size="short", help="Until then, the rent stays as it is.") }}
+    </div>
+    {{ text_field(form, "signed_on", "Extension signed on", type="date", size="short") }}
+    {{ textarea_field(form, "notes", "Notes", help="Anything else about the extension.") }}
+    {{ files_field(form, accept, "Extension agreement") }}
+    <div class="button-row">
+      <button type="submit" class="button">Extend lease</button>
+      <a class="button button-secondary" href="{{ url_for('leases.detail', lease_id=lease.id) }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

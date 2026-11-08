@@ -1,0 +1,35 @@
+{#
+  Small line drawings (icons), drawn in the text's color. They're only decoration:
+  screen readers skip them, so the words next to each one must say what it means.
+#}
+{% set _paths = {
+  "house": '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  "plus": '<path d="M12 5v14M5 12h14"/>',
+  "wrench": '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6Z"/>',
+  "dollar": '<path d="M12 3v18"/><path d="M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3.2c0 4.3 9 2.3 9 6.6 0 1.9-2 3.2-4.5 3.2s-4.5-1.3-4.5-3"/>',
+  "chart": '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  "bell": '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  "calendar": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  "receipt": '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
+  "shield": '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/>',
+  "lock": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  "cloud": '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8H7Z"/>',
+  "disk": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 14h18M7 17h.01"/>',
+  "check": '<path d="m5 12 5 5 9-10"/>',
+  "filter": '<path d="M4 7h16M7 12h10M10 17h4"/>',
+  "up": '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  "pencil": '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  "left": '<path d="m15 18-6-6 6-6"/>',
+  "right": '<path d="m9 18 6-6-6-6"/>',
+  "down": '<path d="M12 5v14M5 12l7 7 7-7"/>',
+  "bank": '<path d="M3 10 12 4l9 6H3Z"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/>',
+} %}
+
+{# Each kind of item that needs attention (alerts.py): its icon, and that icon's color. #}
+{% set kind_icons = {"request": ("wrench", "chip-indigo"), "sign-in": ("lock", "chip-gold"), "lease": ("calendar", "chip-sky"), "rent": ("dollar", "chip-green"), "bank": ("bank", "chip-green"),
+                     "insurance": ("shield", "chip-teal"), "reminder": ("receipt", "chip-indigo"),
+                     "backup": ("cloud", "chip-gold"), "disk": ("disk", "chip-gold")} %}
+
+{% macro icon(name, size=20) -%}
+  <svg class="icon" aria-hidden="true" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{{ _paths[name]|safe }}</svg>
+{%- endmacro %}

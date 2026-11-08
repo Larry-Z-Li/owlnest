@@ -1,0 +1,27 @@
+{% set status_colors = {"Open": "tag-warning", "In progress": "tag-scheduled", "Closed": "tag-done"} %}
+
+{# A maintenance request's status as a colored tag (used on her screens and in the tenant portal). #}
+{% macro status_tag(status) -%}
+  <span class="tag {{ status_colors.get(status, '') }}">{{ status }}</span>
+{%- endmacro %}
+
+{# The same colored tag as a menu on her lists, to change the status right there.
+   static/status.js saves her pick at once; without it, the Save button does. #}
+{% macro status_menu(item, next_page) -%}
+  <form class="status-menu" method="post" action="{{ url_for('maintenance.change_status', request_id=item.id) }}">
+    <input type="hidden" name="next" value="{{ next_page }}">
+    <span class="status-pick tag {{ status_colors.get(item.status, '') }}">
+      <select name="status" aria-label="Status of “{{ item.title }}”">
+        {% for status, color in status_colors.items() %}
+          <option value="{{ status }}" data-color="{{ color }}"{% if status == item.status %} selected{% endif %}>{{ status }}</option>
+        {% endfor %}
+      </select>
+    </span>
+    <noscript><button type="submit" class="button button-small">Save</button></noscript>
+  </form>
+{%- endmacro %}
+
+{# An amount of money, red when it's money out. #}
+{% macro amount(cents) -%}
+  <span class="{{ 'money-out' if cents < 0 else 'money-in' }}">{{ cents|money }}</span>
+{%- endmacro %}

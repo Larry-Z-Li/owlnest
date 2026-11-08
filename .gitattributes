@@ -1,0 +1,3 @@
+# Windows needs its .bat files with Windows line endings; Mac scripts need Unix ones.
+*.bat text eol=crlf
+*.command text eol=lf

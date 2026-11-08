@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, form_problems, record_kind %}
+{% from "_attachments.html" import file_list, files_field %}
+{% block title %}{{ kind }} walkthrough{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('leases.detail', lease_id=lease.id, _anchor='walkthroughs') }}">← Back to the lease</a></p>
+{{ record_kind("Walkthrough") }}
+<h1>{{ kind }} walkthrough <span class="subtitle">{{ lease.tenant_names }}, {{ lease.property.nickname }}</span></h1>
+<p class="muted">
+  {% if kind == "Move-in" %}The home's condition before the tenants moved in.{% else %}The home's condition after the tenants moved out.{% endif %}
+  Attach the walkthrough report, photos, and anything else.
+</p>
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post" enctype="multipart/form-data">
+    {{ text_field(form, "walk_date", "Date of the walkthrough", type="date", size="short", required=True) }}
+    {{ textarea_field(form, "notes", "Notes", rows=6, help="For example: carpet stain in the bedroom, all appliances working.") }}
+    {{ files_field(form, accept, "Add files" if walkthrough else "Attach files") }}
+    <div class="button-row">
+      <button type="submit" class="button">Save walkthrough</button>
+      <a class="button button-secondary" href="{{ url_for('leases.detail', lease_id=lease.id, _anchor='walkthroughs') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+{% if walkthrough %}
+  <section class="card">
+    <h2>Files</h2>
+    {{ file_list(files) }}
+  </section>
+{% endif %}
+{% endblock %}

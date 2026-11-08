@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, password_field, form_problems %}
+{% block title %}Add a person{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('settings.index', _anchor='people') }}">← Back to Settings</a></p>
+<h1>Add a person who can sign in</h1>
+
+<section class="card">
+  <p>They'll be able to see and change all your records, on any computer or phone.</p>
+  {{ form_problems(form) }}
+  <form method="post" action="{{ url_for('people.add') }}">
+    {{ text_field(form, "name", "Their name", required=True, size="short",
+        help="What they'll type to sign in, such as Anna. Capitals don't matter.") }}
+    {{ password_field(form, "password", "Their password", "new-password",
+        help="At least " ~ shortest ~ " characters. A few words together are easiest to remember. Tell them the password in person or by phone.") }}
+    {{ password_field(form, "password_again", "The same password again", "new-password") }}
+    <div class="button-row">
+      <button type="submit" class="button">Add this person</button>
+      <a class="button button-secondary" href="{{ url_for('settings.index', _anchor='people') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }} is closed</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row">
+      <span class="brand">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="{{ app_name }}" height="44">
+      </span>
+    </div>
+  </header>
+  <main>
+    <section class="card">
+      <h1>{{ app_name }} is closed</h1>
+      <p>Everything you entered is saved. You can close this browser tab now.</p>
+      <p>To open it again, click its icon on the Desktop.</p>
+      <p lang="zh-Hans">程序已关闭，所有内容都已保存。现在可以关掉这个浏览器页面。要再次打开，请点击桌面上的图标。</p>
+    </section>
+  </main>
+</body>
+</html>

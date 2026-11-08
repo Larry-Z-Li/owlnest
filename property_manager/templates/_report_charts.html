@@ -1,0 +1,102 @@
+{# The charts under the report (report_charts.py). Every number in them is also in the report above. #}
+
+{% macro legend_swatch(color) %}<span class="chart-swatch" style="background: {{ color }}"></span>{% endmacro %}
+
+{% macro pie_card(title, note, pie) %}
+  <section class="card chart-card">
+    <h3>{{ title }}</h3>
+    <p class="chart-note">{{ note }}</p>
+    <div class="pie-layout">
+      <svg class="pie" viewBox="0 0 200 200" role="img" aria-label="{{ title }}, {{ pie.total }} in all">
+        {% for slice in pie.slices %}
+          <path d="{{ slice.shape }}" fill="{{ slice.color }}" stroke="#ffffff" stroke-width="2" tabindex="0"
+                aria-label="{{ slice.name }}: {{ slice.text }}, {{ slice.share }}%" data-tip-title="{{ slice.name }}" data-tip-body="{{ slice.text }}&#10;{{ slice.share }}% of {{ pie.total }}"></path>
+        {% endfor %}
+      </svg>
+      <ul class="pie-legend">
+        {% for slice in pie.slices %}
+          <li>{{ legend_swatch(slice.color) }}<span class="pie-name">{{ slice.name }}</span><span class="pie-amount">{{ slice.share }}%</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+{% endmacro %}
+
+{% macro report_charts(charts) %}
+<section class="chart-section" id="charts" aria-label="Charts">
+  <h2>Charts</h2>
+
+  <div class="chart-tiles">
+    <div class="chart-tile"><span class="chart-tile-label">Money in</span><strong>{{ charts.money_in|dollars }}</strong></div>
+    <div class="chart-tile"><span class="chart-tile-label">Money out</span><strong>{{ "−" if charts.money_out < 0 }}{{ charts.money_out|abs|dollars }}</strong></div>
+    <div class="chart-tile"><span class="chart-tile-label">Net cash flow</span><strong>{{ "−" if charts.net < 0 }}{{ charts.net|abs|dollars }}</strong></div>
+  </div>
+
+  <div class="chart-grid">
+    {% if charts.months %}
+      <section class="card chart-card chart-wide">
+        <h3>Money in and out, by month</h3>
+        <ul class="chart-legend">
+          <li>{{ legend_swatch("#2a78d6") }}Money in</li>
+          <li>{{ legend_swatch("#eb6834") }}Money out</li>
+        </ul>
+        <div class="month-plot">
+          {% for tick in charts.months.ticks %}
+            <div class="plot-tick{{ ' plot-zero' if tick.zero }}" style="top: {{ '%.2f'|format(tick.top) }}%"><span>{{ tick.label }}</span></div>
+          {% endfor %}
+          <div class="plot-columns">
+            {% for column in charts.months.columns %}
+              <div class="plot-column" tabindex="0" role="img" aria-label="{{ column.name }}: {{ column.tip|replace('\n', ', ') }}" data-tip-title="{{ column.name }}" data-tip-body="{{ column.tip }}">
+                <span class="plot-bar plot-in" style="bottom: {{ '%.2f'|format(100 - charts.months.zero) }}%; height: {{ '%.2f'|format(column.in_height) }}%"></span>
+                <span class="plot-bar plot-out" style="top: {{ '%.2f'|format(charts.months.zero) }}%; height: {{ '%.2f'|format(column.out_height) }}%"></span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="plot-labels">
+          {% for column in charts.months.columns %}<span>{{ column.label }}</span>{% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
+    {% if charts.spending %}
+      <section class="card chart-card">
+        <h3>Where the money goes</h3>
+        <p class="chart-note">Money out by purpose, biggest first.</p>
+        <div class="rank-rows">
+          {% for bar in charts.spending %}
+            <div class="rank-row" tabindex="0" aria-label="{{ bar.name }}: {{ bar.text }}, {{ bar.share }}%" data-tip-title="{{ bar.name }}" data-tip-body="{{ bar.text }}&#10;{{ bar.share }}% of the money out">
+              <span class="rank-name">{{ bar.name }}</span>
+              <span class="rank-track"><span class="rank-bar plot-out" style="width: {{ '%.2f'|format(bar.width) }}%"></span></span>
+              <span class="rank-value">{{ bar.text }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+
+    {% if charts.shares %}
+      {{ pie_card(charts.shares.title, "Who brings the money in.", charts.shares.pie) }}
+    {% endif %}
+
+    {% if charts.homes %}
+      <section class="card chart-card chart-wide">
+        <h3>Net cash flow by home</h3>
+        <p class="chart-note">Which homes make money after their costs, best first. Orange means more went out than came in.</p>
+        <div class="rank-rows">
+          {% for row in charts.homes %}
+            <div class="rank-row" tabindex="0" aria-label="{{ row.name }}: {{ row.text }}" data-tip-title="{{ row.name }}" data-tip-body="Net {{ row.text }}">
+              <span class="rank-name">{{ row.name }}</span>
+              <span class="rank-track rank-both">
+                <span class="rank-zero" style="left: {{ '%.2f'|format(row.zero) }}%"></span>
+                <span class="rank-bar {{ 'plot-in rank-right' if row.good else 'plot-out rank-left' }}" style="left: {{ '%.2f'|format(row.left) }}%; width: {{ '%.2f'|format(row.width) }}%"></span>
+              </span>
+              <span class="rank-value">{{ row.text }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  </div>
+</section>
+{% endmacro %}

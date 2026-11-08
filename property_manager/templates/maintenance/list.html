@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import property_options %}
+{% from "_status.html" import status_menu %}
+{% block title %}Maintenance{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Maintenance</h1>
+  <a class="button" href="{{ url_for('maintenance.new') }}">Add a request</a>
+</div>
+
+{% set filters = {"property_id": property_id or none, "category": category or none} %}
+<div class="list-controls">
+  {# (data-counts: status.js keeps these numbers right when a status changes on this page.) #}
+  {# (Each label is one span: words split up across a flex box's parts would lose their spaces.) #}
+  <nav class="list-tabs" aria-label="Which requests">
+    <a href="{{ url_for('maintenance.index', **filters) }}"{% if show == "not-closed" %} aria-current="true"{% endif %}><span>Open<span class="wide-only"> and in progress</span> (<span data-counts='{{ ["Open", "In progress"]|tojson }}'>{{ open_count }}</span>)</span></a>
+    <a href="{{ url_for('maintenance.index', show='Closed', **filters) }}"{% if show == "Closed" %} aria-current="true"{% endif %}><span>Closed (<span data-counts='{{ ["Closed"]|tojson }}'>{{ closed_count }}</span>)</span></a>
+    <a href="{{ url_for('maintenance.index', show='all', **filters) }}"{% if show == "all" %} aria-current="true"{% endif %}>All</a>
+  </nav>
+  {# A menu shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+  <form class="filter-menus" method="get" action="{{ url_for('maintenance.index') }}" data-auto-filter>
+    <input type="hidden" name="show" value="{{ show }}">
+    <select name="property_id" aria-label="Property">
+      <option value="">All properties</option>
+      {{ property_options(property_groups, property_id) }}
+    </select>
+    <select name="category" aria-label="Type">
+      <option value="">All types</option>
+      {% for group, options in category_groups %}
+        <optgroup label="{{ group }}">
+          {% for value, text in options %}<option value="{{ value }}"{% if category == value %} selected{% endif %}>{{ text }}</option>{% endfor %}
+        </optgroup>
+      {% endfor %}
+    </select>
+    <button type="submit" class="button" data-show-button>Show</button>
+  </form>
+</div>
+
+{% if maintenance_requests %}
+  {# (data-shows: status.js takes a request off this list when its status changes to one the list doesn't show.) #}
+  <table class="list row-links requests-list" data-shows='{{ statuses_shown|tojson }}' data-empty="No requests to show.">
+    <thead>
+      <tr>
+        <th scope="col">Request</th>
+        <th scope="col">Type</th>
+        <th scope="col">Company</th>
+        <th scope="col" class="number">Cost</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in maintenance_requests %}
+        {% set cost = request_cost(item) %}
+        <tr>
+          <td>
+            <a class="row-link" href="{{ url_for('maintenance.edit', request_id=item.id) }}">{{ item.title }}</a>
+            {% if item.unread %}<span class="tag tag-active">New from tenant</span>{% endif %}
+            <br><span class="muted home-line">{{ item.property.nickname }} · reported {{ item.reported_on|nice_date }}{% if item.from_tenant and not item.unread %} · from the tenant{% endif %}</span>
+          </td>
+          <td class="muted">{{ item.category }}</td>
+          <td class="muted">{{ item.company or "—" }}</td>
+          <td class="number" data-label="Cost">{{ cost|money if cost else "—" }}</td>
+          <td class="status-cell">{{ status_menu(item, request.full_path) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="empty">No requests to show.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='filters.js') }}" defer></script>
+<script src="{{ url_for('static', filename='status.js') }}" defer></script>
+{% endblock %}

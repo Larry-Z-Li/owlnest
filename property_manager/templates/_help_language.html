@@ -1,0 +1,12 @@
+{# The language switch at the top of the Help page. Both labels are written in their own language. #}
+<p class="language-switch">
+  {% if language == "zh" %}
+    <a href="{{ url_for('help.index', lang='en') }}" lang="en">English</a>
+    <span aria-hidden="true">|</span>
+    <strong>简体中文</strong>
+  {% else %}
+    <strong>English</strong>
+    <span aria-hidden="true">|</span>
+    <a href="{{ url_for('help.index', lang='zh') }}" lang="zh-Hans">简体中文</a>
+  {% endif %}
+</p>

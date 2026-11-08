@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import action_button, record_kind %}
+{% block title %}Photos · {{ a_property.nickname }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('properties.detail', property_id=a_property.id) }}">← Back to {{ a_property.nickname }}</a></p>
+{{ record_kind("Property") }}
+<h1>Photos <span class="subtitle">{{ a_property.nickname }}</span></h1>
+
+<section class="card">
+  <h2>Add photos</h2>
+  <form method="post" action="{{ url_for('properties.add_photos', property_id=a_property.id) }}" enctype="multipart/form-data">
+    <div class="field">
+      <label for="files">Choose photos</label>
+      <p class="help" id="files-help">From a computer or phone (iPhone photos are fine), up to 20 MB each. You can choose several at once. The slideshow shows them in the order they were added.</p>
+      <input type="file" id="files" name="files" multiple accept="{{ accept }}" aria-describedby="files-help">
+    </div>
+    <button type="submit" class="button">Add photos</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>{{ photos|length }} {{ "photo" if photos|length == 1 else "photos" }}</h2>
+  {% if photos %}
+    <ul class="photo-manage">
+      {% for photo in photos %}
+        {% set address = url_for("files.show", attachment_id=photo.id) %}
+        <li>
+          <a href="{{ address }}" target="_blank" rel="noopener"><img src="{{ address }}" alt="Photo {{ loop.index }} of {{ a_property.nickname }}" loading="lazy"></a>
+          <span class="photo-manage-actions">
+            <span class="muted">{{ loop.index }}{% if loop.first %} · first{% endif %}</span>
+            {{ action_button(url_for("files.archive", attachment_id=photo.id), "Remove", "button-small button-secondary") }}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="muted">A removed photo goes to the <a href="{{ url_for('archive.index') }}">Archive</a>, where you can bring it back.</p>
+  {% else %}
+    <p class="muted">No photos yet.</p>
+  {% endif %}
+</section>
+
+<p><a class="button button-secondary" href="{{ url_for('properties.detail', property_id=a_property.id) }}">Done</a></p>
+{% endblock %}

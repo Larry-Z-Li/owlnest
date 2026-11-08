@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Add account{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('bank.accounts') }}">← Accounts</a></p>
+<div class="page-header">
+  <div>
+    <h1>Add account</h1>
+    <p class="list-summary">Which {{ bank_name or "bank" }} login is the account under?</p>
+  </div>
+</div>
+
+{% for connection in connections %}
+  <section class="card add-account-choice">
+    <h2>{{ connection.label or "The same login" }}</h2>
+    {% if connection.accounts %}<p>{{ connection.accounts|map(attribute="name")|join(", ") }}</p>{% endif %}
+    <p class="muted">Sign in with the login that has these accounts, or the bank will say the login is wrong. Then choose the accounts, and keep these chosen too: any you leave out stop being shared.</p>
+    <form method="post" action="{{ url_for('bank.connect') }}">
+      <input type="hidden" name="add_account" value="1">
+      <input type="hidden" name="connection" value="{{ connection.key }}">
+      <button type="submit" class="button">Use this login</button>
+    </form>
+  </section>
+{% endfor %}
+
+<section class="card add-account-choice">
+  <h2>A different login</h2>
+  {% if can_add_login %}
+    <p class="muted">Sign in with the other login and choose its accounts. Plaid's free plan allows {{ most_connections }} connections in all, and this uses one for good.</p>
+    <form method="post" action="{{ url_for('bank.connect') }}">
+      <input type="hidden" name="new_login" value="1">
+      <button type="submit" class="button">Connect another login</button>
+    </form>
+  {% else %}
+    <p class="muted">Plaid's free plan allows {{ most_connections }} connections in all, and they're all in use.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, form_problems, record_kind %}
+{% block title %}End lease{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('leases.detail', lease_id=lease.id) }}">← Back to the lease</a></p>
+{{ record_kind("Lease") }}
+<h1>End lease <span class="subtitle">{{ lease.tenant_names }}, {{ lease.property.nickname }}</span></h1>
+
+{% if lease.end_date and today < lease.end_date %}
+  <div class="message message-warning" role="alert">
+    <strong>This lease runs until {{ lease.end_date|nice_date }}.</strong> Ending it now ends it early.
+  </div>
+{% endif %}
+
+<section class="card">
+  <p>
+    Ending the lease moves it to {{ lease.property.nickname }}'s previous leases, and the tenants' portal link stops
+    working. If you end it by mistake, open it under “Previous leases” and click “Revive lease”.
+  </p>
+  {{ form_problems(form) }}
+  <form method="post">
+    {{ text_field(form, "ended_on", "Last day of the lease", type="date", size="short", required=True) }}
+    {% if lease.end_date %}
+      {% set error = form.errors.get("confirm_early") %}
+      <div class="field{% if error %} has-error{% endif %}">
+        <label class="checkbox">
+          <input type="checkbox" name="confirm_early" value="1"{% if form.raw("confirm_early") == "1" %} checked{% endif %}>
+          If this is before {{ lease.end_date|nice_date }}: yes, end this lease early
+        </label>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+      </div>
+    {% endif %}
+    <div class="button-row">
+      <button type="submit" class="button">End lease</button>
+      <a class="button button-secondary" href="{{ url_for('leases.detail', lease_id=lease.id) }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, select_field, money_field, form_problems, record_kind %}
+{% block title %}{{ "Edit " ~ a_property.nickname if a_property else "Add a property" }}{% endblock %}
+
+{% block content %}
+{% if a_property %}
+  <p class="breadcrumb"><a href="{{ url_for('properties.detail', property_id=a_property.id) }}">← Back to {{ a_property.nickname }}</a></p>
+  {{ record_kind("Property") }}
+  <h1>Edit {{ a_property.nickname }}</h1>
+{% else %}
+  <p class="breadcrumb"><a href="{{ url_for('properties.index') }}">← All properties</a></p>
+  {{ record_kind("Property") }}
+  <h1>Add a property</h1>
+{% endif %}
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post">
+    {{ text_field(form, "nickname", "Name", required=True, help="What you call it, such as Elm St.") }}
+    {{ select_field(form, "llc_id", "LLC", options=llc_options, blank="— Not in an LLC —", help="Which LLC owns it. “Add LLC” on the Properties page adds one.") }}
+    {{ textarea_field(form, "address", "Address", help="Tenants see the first line in the tenant portal.") }}
+    {{ text_field(form, "bedrooms", "Bedrooms", size="short", inputmode="numeric") }}
+    {{ text_field(form, "bathrooms", "Bathrooms", size="short", inputmode="decimal", help="Such as 2.5 for two full bathrooms and a half bath.") }}
+    {{ text_field(form, "square_feet", "Square feet", size="short", inputmode="numeric") }}
+    {{ textarea_field(form, "notes", "Notes") }}
+    <div class="field">
+      <label class="checkbox">
+        <input type="checkbox" name="look_up_value" value="1"{% if form.raw("look_up_value") == "1" %} checked{% endif %}>
+        Look up its estimated value each month
+      </label>
+      <p class="help">From RentCast. The address needs its city, state and ZIP code. Each home uses 1 of RentCast's 50 free lookups a month.</p>
+    </div>
+    {{ money_field(form, "own_value", "Your own estimated value", help="Optional. If you fill this in, it's shown as the home's value instead of RentCast's, even while it's looked up each month. Leave it empty to show RentCast's.") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if a_property else "Add property" }}</button>
+      <a class="button button-secondary" href="{{ url_for('properties.detail', property_id=a_property.id) if a_property else url_for('properties.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

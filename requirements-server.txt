@@ -1,0 +1,4 @@
+# The packages the server needs: everything in requirements.txt, plus gunicorn,
+# which runs the app on the server. The Dockerfile installs these.
+-r requirements.txt
+gunicorn==26.2.0

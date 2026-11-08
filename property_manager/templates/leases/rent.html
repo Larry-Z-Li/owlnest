@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, money_field, late_fee_fields, form_problems, record_kind %}
+{% block title %}{{ "Edit rent" if period else "Add a rent change" }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('leases.detail', lease_id=lease.id, _anchor='rent') }}">← Back to the lease</a></p>
+{{ record_kind("Rent") }}
+<h1>{{ "Edit rent" if period else "Add a rent change" }} <span class="subtitle">{{ lease.tenant_names }}, {{ lease.property.nickname }}</span></h1>
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post">
+    {% if period and period is sameas lease.rent_periods[0] %}
+      <p>This is the rent the lease started with, on <strong>{{ period.starts_on|nice_date }}</strong>. To change that date, edit the lease's start date.</p>
+    {% else %}
+      {{ text_field(form, "starts_on", "Starts on", type="date", size="short", required=True) }}
+    {% endif %}
+    {{ money_field(form, "amount", "Monthly rent", required=True) }}
+    {{ late_fee_fields(form) }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if period else "Add rent change" }}</button>
+      <a class="button button-secondary" href="{{ url_for('leases.detail', lease_id=lease.id, _anchor='rent') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_archived.html" import archived_table %}
+{% from "_macros.html" import text_field, textarea_field, select_field, form_problems, action_button, record_kind %}
+{% from "_attachments.html" import file_list, files_field %}
+{% from "_status.html" import amount %}
+{% block title %}{{ maintenance_request.title if maintenance_request else "Add a request" }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('maintenance.index') }}">← All requests</a></p>
+{{ record_kind("Maintenance request") }}
+<div class="page-header">
+  <h1>{{ maintenance_request.title if maintenance_request else "Add a request" }}</h1>
+  {% if maintenance_request %}<div class="actions">{{ action_button(url_for("maintenance.archive", request_id=maintenance_request.id), "Archive request") }}</div>{% endif %}
+</div>
+
+{% if maintenance_request and maintenance_request.from_tenant %}
+  <div class="message message-success">
+    Sent by {{ maintenance_request.lease.tenant_names if maintenance_request.lease else "the tenants" }} from the tenant portal
+    on {{ maintenance_request.created_at|nice_datetime }}.
+    {% if maintenance_request.lease and maintenance_request.lease.tenant_phone %}Their phone: {{ maintenance_request.lease.tenant_phone }}.{% endif %}
+    They see its status in the portal.
+  </div>
+{% endif %}
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post" action="{{ url_for('maintenance.update', request_id=maintenance_request.id) if maintenance_request else url_for('maintenance.create') }}" enctype="multipart/form-data">
+    {{ select_field(form, "property_id", "Property", groups=property_groups, required=True) }}
+    {{ text_field(form, "title", "What needs doing", required=True, help="A few words, such as: Kitchen sink is leaking") }}
+    {{ textarea_field(form, "description", "Details", rows=4) }}
+    <div class="field-row">
+      {{ select_field(form, "category", "Type", groups=category_groups, required=True, blank=None) }}
+      {{ select_field(form, "status", "Status", options=status_options, required=True, blank=None) }}
+    </div>
+    {{ text_field(form, "company", "Company fixing it") }}
+    {{ text_field(form, "reported_on", "Date", type="date", size="short", required=True) }}
+    {{ files_field(form, accept, "Add pictures, receipts and other files" if maintenance_request else "Pictures, receipts and other files") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if maintenance_request else "Add request" }}</button>
+      <a class="button button-secondary" href="{{ url_for('maintenance.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+{% if maintenance_request %}
+  <section class="card" id="files">
+    <h2>Files</h2>
+    {{ file_list(files) }}
+    {% if removed_files %}
+      <h3>Removed files</h3>
+      {{ archived_table(removed_files, url_for('maintenance.edit', request_id=maintenance_request.id, _anchor='files')) }}
+    {% endif %}
+  </section>
+
+  <section class="card" id="transactions">
+    <div class="section-header">
+      <h2>Transactions</h2>
+      <a class="button button-secondary" href="{{ url_for('transactions.new', request_id=maintenance_request.id) }}">Add a transaction for this request</a>
+    </div>
+    {% if transactions %}
+      <table class="list">
+        <tbody>
+          {% for transaction in transactions %}
+            <tr>
+              <td><a href="{{ url_for('transactions.edit', transaction_id=transaction.id) }}">{{ transaction.transaction_date|nice_date }}</a></td>
+              <td>{{ transaction.details }}</td>
+              <td class="number">{{ amount(transaction.amount_cents) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th scope="row" colspan="2">Cost so far</th><td class="number"><strong>{{ cost|money }}</strong></td></tr>
+        </tfoot>
+      </table>
+    {% else %}
+      <p class="muted">No transactions yet. Payments for this request (such as the company's bill) show here, under the type “{{ maintenance_request.category }}”.</p>
+    {% endif %}
+  </section>
+{% endif %}
+{% endblock %}

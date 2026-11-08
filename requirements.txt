@@ -1,0 +1,11 @@
+# The Python packages Property Manager uses. "Set Up Property Manager" installs these.
+# Versions are pinned so every install gets exactly the same, tested packages.
+Flask==3.1.3
+SQLAlchemy==2.1.0
+fpdf2==2.8.8
+Pillow==12.3.0
+pillow-heif==1.8.0
+openpyxl==3.1.5
+# The list of trusted HTTPS certificates, so the app can check it's really talking to its server.
+certifi==2026.7.22
+pytest==9.1.1

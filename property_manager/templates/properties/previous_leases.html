@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Previous leases · {{ a_property.nickname }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('properties.detail', property_id=a_property.id) }}">← Back to {{ a_property.nickname }}</a></p>
+<h1>Previous leases <span class="subtitle">{{ a_property.nickname }}</span></h1>
+
+{% if leases %}
+  <table class="list">
+    <thead>
+      <tr><th scope="col">Tenants</th><th scope="col">Started</th><th scope="col">Ended</th><th scope="col" class="number">Rent</th></tr>
+    </thead>
+    <tbody>
+      {% for lease in leases %}
+        <tr>
+          <td><a href="{{ url_for('leases.detail', lease_id=lease.id) }}">{{ lease.tenant_names }}</a></td>
+          <td>{{ lease.start_date|nice_date }}</td>
+          <td>{{ lease.ended_on|nice_date }}</td>
+          <td class="number">{{ lease.rent_cents|money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="empty">{{ a_property.nickname }} has no previous leases. When a lease ends, it moves here.</p>
+{% endif %}
+{% endblock %}

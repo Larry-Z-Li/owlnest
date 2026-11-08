@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Accounts{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('bank.index') }}">← From the bank</a></p>
+<div class="page-header page-header-together">
+  <div>
+    <h1>Accounts</h1>
+    <p class="list-summary">
+      <strong>{{ count }}</strong> {{ "account" if count == 1 else "accounts" }} connected{% if bank_name %} at {{ bank_name }}{% endif %}
+      {%- if last_check %}<span class="wide-only"> · Last fetched {{ last_check.asked_at|nice_datetime }}</span>{% endif %}
+    </p>
+  </div>
+  <a class="button button-round-on-phone" href="{{ url_for('bank.add_account') }}">{{ icon("plus", 18) }}<span>Add account</span></a>
+</div>
+
+{% if count %}
+  {% for connection in connections %}
+    <section class="reminder-group">
+      {% if connection.label %}<h2 class="month-name">{{ connection.label }}</h2>{% endif %}
+      {% if connection.accounts %}
+        <div class="month-rows">
+          {% for account in connection.accounts %}
+            <div class="ledger-row account-row">
+              <span class="chip chip-sky">{{ icon("bank") }}</span>
+              <span class="ledger-text">
+                <span class="ledger-title"><span class="ledger-what"><strong>{{ account.name }}</strong></span></span>
+                <span class="ledger-meta">
+                  {{- connection.bank }}{% if connection.bank and account.kind %} · {% endif %}{{ account.kind -}}
+                </span>
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty">No other accounts to show for this login. Any it shares may already be listed above.</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="empty">No accounts to show right now.</p>
+{% endif %}
+{% endblock %}

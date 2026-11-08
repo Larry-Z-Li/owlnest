@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, select_field, form_problems, action_button, record_kind %}
+{% block title %}{{ "Edit reminder" if reminder else "Add a reminder" }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('reminders.index') }}">← All reminders</a></p>
+{{ record_kind("Reminder") }}
+<h1>{{ "Edit reminder" if reminder else "Add a reminder" }}</h1>
+
+<section class="card">
+  {% if reminder and reminder.last_done_on %}<p class="muted">Last marked done on {{ reminder.last_done_on|nice_date }}.</p>{% endif %}
+  {{ form_problems(form) }}
+  <form method="post">
+    {{ text_field(form, "kind", "What it's about", required=True, size="medium", suggestions=kind_suggestions,
+        help="For example “Insurance renewal” or “Property tax due”. Pick a suggestion or type your own.") }}
+    {{ text_field(form, "title", "Details", size="medium", help="For example, the insurance company and policy number.") }}
+    {{ select_field(form, "property_id", "Property", groups=property_groups, blank="— Not about one property —") }}
+    {{ text_field(form, "due_date", "Due date", type="date", size="short", required=True,
+        help="For insurance, the date the policy expires.") }}
+    {{ text_field(form, "remind_days_before", "Remind me this many days before", size="tiny", inputmode="numeric", required=True) }}
+    {{ select_field(form, "repeat", "Repeats", options=repeat_options, required=True, blank=None,
+        help="When you mark it done, a repeating reminder moves to its next date.") }}
+    {{ textarea_field(form, "notes", "Notes") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if reminder else "Add reminder" }}</button>
+      <a class="button button-secondary" href="{{ url_for('reminders.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+{# A reminder can't be dismissed or archived: it stays until it's done. #}
+{% if reminder and not reminder.finished %}
+  <section class="card">
+    <h2>Done?</h2>
+    <p class="muted">A reminder stays until it's done. One that repeats comes back on its next date.</p>
+    <div class="button-row">
+      {{ action_button(url_for("reminders.done", reminder_id=reminder.id), "Mark done", "") }}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

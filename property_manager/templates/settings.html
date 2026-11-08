@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, form_problems, action_button %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+
+<section class="card">
+  <h2>Your details</h2>
+  <p class="muted">Tenants see your name and phone number in the tenant portal.</p>
+  {{ form_problems(details_form) }}
+  <form method="post" action="{{ url_for('settings.save_details') }}">
+    {{ text_field(details_form, "business_name", "Your name or business name") }}
+    {{ textarea_field(details_form, "mailing_address", "Mailing address") }}
+    {{ text_field(details_form, "phone", "Phone number", type="tel", size="short") }}
+    <button type="submit" class="button">Save my details</button>
+  </form>
+</section>
+
+{% if on_server %}
+<section class="card" id="people">
+  <h2>People who can sign in</h2>
+  <p>
+    Open <a href="{{ public_address }}">{{ public_address }}</a> in a web browser on any computer or phone,
+    and sign in with one of these names and passwords. Each device stays signed in for {{ stays_signed_in_days }} days after it was last used.
+    {% if not signed_in_as %}(This computer has the app installed, so it doesn't need to sign in.){% endif %}
+  </p>
+  {% if people %}
+    <table class="list">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Signed in on</th>
+          <th scope="col"><span class="visually-hidden">Change</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in people %}
+          {% set is_me = person.name == signed_in_as %}
+          <tr>
+            <td>
+              {{ person.name }}{% if is_me %} <span class="muted">(you)</span>{% endif %}
+              {% if person.locked_at %}<br><span class="tag tag-late">Locked</span> <span class="muted">since {{ person.locked_at|nice_datetime }}</span>{% endif %}
+            </td>
+            <td>
+              {% for device in person.sign_ins %}
+                {{ device.device }}, last used {{ device.last_used_at|days_ago }}{% if not loop.last %}<br>{% endif %}
+              {% else %}
+                <span class="muted">Not signed in anywhere</span>
+              {% endfor %}
+            </td>
+            <td class="row-actions">
+              {% if person.locked_at %}
+                {{ action_button(url_for("people.unlock", account_id=person.id), "Unlock", "button-small") }}
+              {% endif %}
+              <a class="button button-small button-secondary" href="{{ url_for('people.password', account_id=person.id) }}">
+                {{ "Change my password" if is_me else "New password" }}
+              </a>
+              {% if not is_me %}
+                <form method="post" action="{{ url_for('people.remove', account_id=person.id) }}" class="inline"
+                      onsubmit='return confirm({{ ("Stop " ~ person.name ~ " from signing in? They’re signed out everywhere.")|tojson }});'>
+                  <button type="submit" class="button button-small button-danger">Remove</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">Nobody can sign in yet. Add yourself first, then anyone else who looks after the records.</p>
+  {% endif %}
+  <p><a class="button" href="{{ url_for('people.new') }}">Add a person</a></p>
+</section>
+{% endif %}
+
+{% if values %}
+<section class="card" id="home-values">
+  <h2>Home values</h2>
+  {% if not values.on %}
+    <p>Off. To look up each home's value once a month, set <code>{{ values.key_variable }}</code> to your RentCast API key on Render's Environment page.</p>
+  {% else %}
+    <p>
+      Each home's estimated value is looked up from RentCast about once a month.
+      Lookups in the last 31 days: <strong>{{ values.recent }}</strong>.
+      The app never makes more than {{ values.most }} in 31 days, so it stays within RentCast's 50 free lookups a month.
+    </p>
+    {% if values.stopped %}<div class="message message-error">Lookups have stopped: {{ values.stopped }}</div>{% endif %}
+    {% if values.homes %}
+      <p>Homes looked up:
+        {% for a_property in values.homes %}<a href="{{ url_for('properties.detail', property_id=a_property.id) }}">{{ a_property.nickname }}</a>{{ ", " if not loop.last }}{% endfor %}.
+        To add or remove one, edit the property and tick or untick “Look up its estimated value each month”.
+      </p>
+    {% else %}
+      <p class="muted">No homes are looked up yet. To look one up, edit the property and tick “Look up its estimated value each month”.</p>
+    {% endif %}
+    {% if values.no_zip %}
+      <p>These homes are skipped until their address has a ZIP code:
+        {% for a_property in values.no_zip %}<a href="{{ url_for('properties.edit', property_id=a_property.id) }}">{{ a_property.nickname }}</a>{{ ", " if not loop.last }}{% endfor %}.
+      </p>
+    {% endif %}
+  {% endif %}
+</section>
+{% endif %}
+
+{% if bank %}
+<section class="card" id="bank">
+  <h2>Bank</h2>
+  {% if bank.connected %}
+    <p>Connected{% if bank.name %} to {{ bank.name }}{% endif %} through Plaid, which can only read. It fetches what's new once a day. {% if bank.last_check %}Last fetched: <strong>{{ bank.last_check.asked_at|nice_datetime }}</strong>. {% endif %}See <a href="{{ url_for('bank.index') }}">From the bank</a>.</p>
+    {% if bank.problem %}<div class="message message-warning">{{ bank.problem }}</div>{% endif %}
+    <form method="post" action="{{ url_for('settings.check_the_bank') }}">
+      <button type="submit" class="button">Fetch now</button>
+    </form>
+  {% elif bank.set_up %}
+    <p>Ready to connect. Click “Connect the bank” on the <a href="{{ url_for('bank.index') }}">From the bank</a> page.</p>
+  {% else %}
+    <p>Not connected. To bring in the bank's activity automatically, set <code>{{ bank.key_variables[0] }}</code> and <code>{{ bank.key_variables[1] }}</code> to the keys from a free Plaid Trial account, on Render's Environment page.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card" id="backups">
+  <h2>Backups</h2>
+  <p>
+    {% if on_server %}
+      Your records are kept on the app's server. It backs up all your records and files
+      every day, and keeps {{ what_is_kept }}.
+    {% else %}
+      The app backs up all your records and files every time it starts, and keeps {{ what_is_kept }}.
+    {% endif %}
+  </p>
+  <p>
+    {% if last_backup %}
+      Last backup: <strong>{{ last_backup|nice_datetime }}</strong> ({{ last_backup|days_ago }}).
+    {% else %}
+      No backup has been made yet.
+    {% endif %}
+  </p>
+  <form method="post" action="{{ url_for('settings.backup_now') }}">
+    <button type="submit" class="button">Back up now</button>
+  </form>
+
+  {% if on_server %}
+  <h3>Copies on your computers</h3>
+  <p>
+    Every computer that has the app also saves a copy of the newest backup once a day, while the app is open,
+    in its <strong>Documents</strong> folder, in <strong class="path">Property Manager Backups</strong>.
+    Each computer keeps the same ones ({{ what_is_kept }}), so your records are safe even if the server is lost.
+  </p>
+  {% if backup_copies %}
+    <ul>
+      {% for copy in backup_copies %}
+        <li><strong>{{ copy.computer }}</strong>: last copy saved {{ copy.last_copied_at|nice_datetime }} ({{ copy.last_copied_at|days_ago }})</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No computer has saved a copy yet.</p>
+  {% endif %}
+  {% else %}
+  <h3>Second copy of your backups</h3>
+  <p>
+    Every backup is also copied to a second folder, which keeps the same ones.
+  </p>
+  <p>
+    Second folder: <strong class="path">{{ second_folder }}</strong>
+    {% if not settings.backup_folder %}<br><span class="muted">(the standard folder, in your Documents folder)</span>{% endif %}
+  </p>
+  <p>
+    If this computer breaks or is lost, backups kept only on it are lost too. For extra safety,
+    choose a folder in iCloud Drive, Dropbox, OneDrive, or Google Drive instead.
+  </p>
+
+  {% if suggestions %}
+    <p>Folders found on this computer. Click one to use it:</p>
+    <div class="button-row">
+      {% for name, folder in suggestions %}
+        <form method="post" action="{{ url_for('settings.save_backup_folder') }}">
+          <input type="hidden" name="backup_folder" value="{{ folder }}">
+          <button type="submit" class="button button-secondary" title="{{ folder }}">Use {{ name }}</button>
+        </form>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {{ form_problems(folder_form) }}
+  <form method="post" action="{{ url_for('settings.save_backup_folder') }}">
+    {{ text_field(folder_form, "backup_folder", "Or type a folder's location",
+        help="For example: /Users/yourname/Dropbox/Property Manager Backups. If the last folder doesn't exist yet, it will be created.") }}
+    <div class="button-row">
+      <button type="submit" class="button">Save backup folder</button>
+    </div>
+  </form>
+  {% if settings.backup_folder %}
+    <form method="post" action="{{ url_for('settings.save_backup_folder') }}">
+      <input type="hidden" name="backup_folder" value="">
+      <button type="submit" class="button button-secondary">Go back to the standard folder</button>
+    </form>
+  {% endif %}
+
+  {% endif %}
+
+  <h3>Where your records are kept</h3>
+  {% if on_server %}
+    <p>All your records: <span class="path">{{ data_folder }}</span>, on the server</p>
+    <p>Backups on the server: <span class="path">{{ backups_folder }}</span></p>
+  {% else %}
+    <p>All your records: <span class="path">{{ data_folder }}</span></p>
+    <p>Backups on this computer: <span class="path">{{ backups_folder }}</span></p>
+  {% endif %}
+</section>
+{% endblock %}

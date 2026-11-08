@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_archived.html" import archived_table %}
+{% from "_macros.html" import text_field, textarea_field, money_field, select_field, form_problems, action_button, record_kind %}
+{% from "_attachments.html" import file_list, files_field %}
+{% set heading = "Enter into Transactions" if entry else "Edit transaction" if transaction else "Add a transaction" %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb">{% if entry %}<a href="{{ url_for('bank.index') }}">← From the bank</a>{% else %}<a href="{{ url_for('transactions.index') }}">← All transactions</a>{% endif %}</p>
+{{ record_kind("Transaction") }}
+<div class="page-header">
+  <h1>{{ heading }}</h1>
+  {% if from_the_bank %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('transactions.delete', transaction_id=transaction.id) }}" class="inline"
+            onsubmit='return confirm({{ "Return this transaction to From the bank? It’s taken out of Transactions, and its entry waits there to be entered again. What you added to it here, such as its property, purpose and files, won’t be kept."|tojson }});'>
+        <button type="submit" class="button button-danger">Return to From the bank</button>
+      </form>
+    </div>
+  {% elif transaction %}
+    <div class="actions">{{ action_button(url_for("transactions.archive", transaction_id=transaction.id), "Archive transaction") }}</div>
+  {% endif %}
+</div>
+
+{% if entry %}<p class="muted form-note">Filled in from the bank. Choose its property and purpose.</p>{% endif %}
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post" action="{{ url_for('transactions.update', transaction_id=transaction.id) if transaction else url_for('transactions.create') }}" enctype="multipart/form-data">
+    {% if entry %}<input type="hidden" name="bank_entry" value="{{ entry.id }}">{% endif %}
+    {{ text_field(form, "transaction_date", "Date", type="date", size="short", required=True) }}
+
+    {% set error = form.errors.get("direction") %}
+    <fieldset class="field{% if error %} has-error{% endif %}">
+      <legend>Money in or out <span class="required">(required)</span></legend>
+      <label class="choice"><input type="radio" name="direction" value="in"{% if form.raw("direction") == "in" %} checked{% endif %}> <span>Money in (such as rent)</span></label>
+      <label class="choice"><input type="radio" name="direction" value="out"{% if form.raw("direction") == "out" %} checked{% endif %}> <span>Money out (such as a repair bill)</span></label>
+      {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    </fieldset>
+
+    {{ money_field(form, "amount", "Amount", required=True) }}
+    {# While a request is chosen, the property and purpose are the request's, so they're greyed out (see transaction_form.js). #}
+    {% set linked = requests_by_id.get(form.raw("request_id")) %}
+    {{ select_field(form, "property_id", "Property", groups=property_groups, blank="— Not for one property —",
+        value=linked.property_id if linked else none, disabled=linked is not none,
+        help="If you choose a request below, it's the request's property.") }}
+    {% if llc_options %}
+      {# With a property chosen, it's that property's LLC, so this is greyed out (see transaction_form.js). #}
+      {% set home = (linked.property_id|string) if linked else form.raw("property_id") %}
+      {{ select_field(form, "llc_id", "LLC", options=llc_options, blank="— None —", value=llc_by_property.get(home, "") if home else none, disabled=home != "",
+          help="For money that's about the LLC itself, such as its accounting fee. If you choose a property, it's that property's LLC.") }}
+    {% endif %}
+    {{ text_field(form, "tenant_name", "Tenant", help="If you leave it empty, it's filled in from the property's lease on that date.") }}
+    {{ select_field(form, "category", "Purpose", groups=category_groups, value=linked.type if linked else none, disabled=linked is not none,
+        help="If you choose a request below, the purpose is the request's type.") }}
+    {{ select_field(form, "request_id", "Maintenance request", options=request_options, blank="— None —",
+        help="Link it to a request, such as the bill for a repair. It then takes on the request's type and property.") }}
+    {{ textarea_field(form, "details", "Details", rows=2, help="Such as who it was paid to, or a check number.") }}
+    {{ files_field(form, accept, "Add receipts and other files" if transaction else "Receipts and other files") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if transaction else "Add transaction" }}</button>
+      {% if not transaction and not entry %}<button type="submit" name="then" value="another" class="button button-secondary">Add, then add another</button>{% endif %}
+      <a class="button button-secondary" href="{{ url_for('bank.index') if entry else url_for('transactions.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+{% if transaction %}
+  <section class="card" id="files">
+    <h2>Files</h2>
+    {{ file_list(files) }}
+    {% if removed_files %}
+      <h3>Removed files</h3>
+      {{ archived_table(removed_files, url_for('transactions.edit', transaction_id=transaction.id, _anchor='files')) }}
+    {% endif %}
+  </section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script type="application/json" id="requests-by-id">{{ requests_by_id|tojson }}</script>
+<script type="application/json" id="llc-by-property">{{ llc_by_property|tojson }}</script>
+<script src="{{ url_for('static', filename='transaction_form.js') }}" defer></script>
+{% endblock %}

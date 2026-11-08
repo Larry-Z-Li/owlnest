@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, form_problems, action_button, record_kind %}
+{% from "_attachments.html" import file_list, files_field %}
+{% block title %}{{ "Edit insurance" if insurance else "Add insurance" }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('properties.detail', property_id=a_property.id, _anchor='insurance') }}">← Back to {{ a_property.nickname }}</a></p>
+{{ record_kind("Insurance") }}
+<div class="page-header">
+  <h1>{{ (insurance.kind ~ " insurance") if insurance else "Add insurance" }} <span class="subtitle">{{ a_property.nickname }}</span></h1>
+  {% if insurance %}<div class="actions">{{ action_button(url_for("insurances.archive", insurance_id=insurance.id), "Archive insurance") }}</div>{% endif %}
+</div>
+
+<section class="card">
+  <p class="muted">You'll be reminded 60 days before it ends. Insurance here is only a record and a reminder: it isn't linked to any money.</p>
+  {{ form_problems(form) }}
+  <form method="post" enctype="multipart/form-data">
+    {% if not insurance %}<input type="hidden" name="property_id" value="{{ a_property.id }}">{% endif %}
+    {{ text_field(form, "kind", "Kind of insurance", required=True, size="medium", suggestions=kinds,
+        help="Such as Property or Renters.") }}
+    {{ text_field(form, "company", "Company") }}
+    {{ text_field(form, "policy_number", "Policy number", size="medium") }}
+    <div class="field-row">
+      {{ text_field(form, "start_date", "Start date", type="date", size="short", required=True) }}
+      {{ text_field(form, "end_date", "End date", type="date", size="short", required=True) }}
+    </div>
+    {{ textarea_field(form, "notes", "Notes") }}
+    {{ files_field(form, accept, "Add files" if insurance else "Attach the policy and other papers") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if insurance else "Add insurance" }}</button>
+      <a class="button button-secondary" href="{{ url_for('properties.detail', property_id=a_property.id, _anchor='insurance') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+
+{% if insurance %}
+  <section class="card" id="files">
+    <h2>Files</h2>
+    {{ file_list(files) }}
+  </section>
+{% endif %}
+{% endblock %}

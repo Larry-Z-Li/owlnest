@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_status.html" import amount %}
+{% from "_macros.html" import llc_options, property_options %}
+{% from "_report_charts.html" import report_charts %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Cash flow</h1>
+  {% if report %}
+    <div class="actions">
+      <a class="button" href="{{ url_for('reports.excel', **link_args) }}">Download Excel</a>
+      <a class="button button-secondary" href="{{ url_for('reports.pdf', **link_args) }}">Download PDF</a>
+      {% if charts %}<a class="button button-secondary" href="#charts">See charts ↓</a>{% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{# A menu or date shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+<form class="filter-bar" method="get" action="{{ url_for('reports.index') }}" data-auto-filter>
+  <label class="filter-wide">Properties
+    <select name="scope">
+      <option value="">All properties</option>
+      {{ llc_options(llcs, scope) }}
+      {{ property_options(property_groups, scope, "property-") }}
+    </select>
+  </label>
+  <label>From <input type="date" name="from" value="{{ start.isoformat() }}"></label>
+  <label>To <input type="date" name="to" value="{{ end.isoformat() }}"></label>
+  <label>Columns
+    <select name="interval">
+      <option value="month"{% if interval == "month" %} selected{% endif %}>By month</option>
+      <option value="property"{% if interval == "property" %} selected{% endif %}>By property</option>
+      {% if llcs %}<option value="llc"{% if interval == "llc" %} selected{% endif %}>By LLC</option>{% endif %}
+    </select>
+  </label>
+  <button type="submit" class="button" data-show-button>Show</button>
+</form>
+
+{% if problem %}
+  <div class="message message-error" role="alert">{{ problem }}</div>
+{% endif %}
+
+{% if report %}
+  <section class="card report">
+    <p class="muted">
+      {{ description }} · {{ report.transaction_count }} {{ "transaction" if report.transaction_count == 1 else "transactions" }}.
+      Money in is positive and money out negative. Net cash flow doesn't include transfers.
+    </p>
+    {# A second scroll bar above the table, kept in step with the one below it (static/top_slider.js). #}
+    <div class="top-slider" data-scrolls="report-table" hidden><div></div></div>
+    <div class="table-scroll" id="report-table">
+      <table class="list report-table">
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">Purpose</span></th>
+            {% for label in report.columns %}<th scope="col" class="number">{{ label }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for section in report.sections %}
+            <tr class="report-heading"><th colspan="{{ report.columns|length + 1 }}" scope="rowgroup">{{ section.heading }}</th></tr>
+            {% for row in section.rows %}
+              <tr class="{{ 'report-total' if row.kind == 'total' else ('report-net' if row.kind == 'result' else '') }}">
+                <th scope="row">{{ row.label }}</th>
+                {% for cents in row.values %}
+                  <td class="number">{% if cents %}{{ amount(cents) }}{% else %}<span class="muted">–</span>{% endif %}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% if charts %}{{ report_charts(charts) }}{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='filters.js') }}" defer></script>
+<script src="{{ url_for('static', filename='top_slider.js') }}" defer></script>
+<script src="{{ url_for('static', filename='reports.js') }}" defer></script>
+{% endblock %}

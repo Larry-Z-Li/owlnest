@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "transactions/_ledger.html" import signed, total, month_summary %}
+{% block title %}From the bank{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('transactions.index') }}">← Back to Transactions</a></p>
+<div class="page-header">
+  <div>
+    <h1>From the bank</h1>
+    {% if count %}
+      <p class="list-summary">
+        <span class="wide-only">{{ count }} {{ "entry" if count == 1 else "entries" }} · </span>
+        In <strong class="money-in">{{ money_in|money }}</strong> ·
+        Out <strong>{{ money_out|abs|money }}</strong> ·
+        Net <strong>{{ total(money_in + money_out) }}</strong>
+      </p>
+    {% endif %}
+    {% if connected %}
+      <p class="list-summary bank-status">{{ icon("check", 16) }} {{ bank_name or "Connected" }}, fetched once a day{% if last_check %}. Last fetched {{ last_check.asked_at|nice_datetime }}{% endif %}.</p>
+    {% endif %}
+  </div>
+  {% if connected %}
+    <div class="page-actions">
+      <a class="button button-secondary button-with-icon" href="{{ url_for('bank.accounts') }}">{{ icon("bank", 18) }}<span>Accounts</span></a>
+    </div>
+  {% endif %}
+</div>
+
+{# (One form for each login that needs it, so a repair goes to the right connection.) #}
+{% for one in trouble %}
+  <div class="message message-warning bank-problem">
+    {% if one.problem %}<strong>The bank connection{% if one.label %} ({{ one.label }}){% endif %} needs attention.</strong> {{ one.problem }}
+    {% else %}<strong>The bank connection{% if one.label %} ({{ one.label }}){% endif %} needs renewing by {{ one.renew_by|nice_date }}.</strong> The bank asks for this once a year.{% endif %}
+  </div>
+  <form method="post" action="{{ url_for('bank.connect') }}" class="bank-connect">
+    <input type="hidden" name="connection" value="{{ one.key }}">
+    <button type="submit" class="button">Reconnect the bank</button>
+  </form>
+{% endfor %}
+
+{# (After every connection is ended by hand, the entries stay listed, so this shows above them.) #}
+{% if set_up and not connected %}
+  <section class="card bank-empty">
+    <span class="chip chip-sky">{{ icon("bank") }}</span>
+    <h2>Connect your bank</h2>
+    <p class="muted">You'll sign in on your bank's own page and choose which accounts to share. This app can only read: it can't move money, and it never sees your password.</p>
+    <form method="post" action="{{ url_for('bank.connect') }}">
+      <button type="submit" class="button">Connect the bank</button>
+    </form>
+  </section>
+{% endif %}
+
+{% if any_entries %}
+  {# A menu shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+  <form class="filter-pills" method="get" action="{{ url_for('bank.index') }}" data-auto-filter{% if filtering %} data-active{% endif %}>
+    {% if accounts|length > 1 %}
+      <select name="account" class="account-menu" aria-label="Account">
+        <option value="">All accounts</option>
+        {% for name in accounts %}<option value="{{ name }}"{% if name == account %} selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+    {% endif %}
+    <select name="direction" aria-label="Money in or out">
+      <option value="">Money in and out</option>
+      {% for value, label in directions.items() %}<option value="{{ value }}"{% if value == direction %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <select name="status" aria-label="Status">
+      <option value="">Every status</option>
+      {% for value, label in statuses.items() %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="button button-small" data-show-button>Show</button>
+    {% if filtering %}<a class="filters-clear" href="{{ url_for('bank.index') }}">Show all</a>{% endif %}
+  </form>
+{% endif %}
+
+{% if months %}
+  {% for month in months %}
+    <details class="month"{% if month.open %} open{% endif %}>
+      {{ month_summary(month, "entry", "entries") }}
+      <div class="month-rows">
+        {% for entry in month.rows %}
+          {% set reading = read_words(entry) %}
+          {% set words = reading.after_method() %}
+          {% set money_coming_in = entry.amount_cents > 0 %}
+          {% set maybe = maybe_entered.get(entry.id) %}
+          {% set in_transactions = entry.status == "Entered" %}
+          {% set overridden = entry.status == "Overridden" %}
+          {% set linked = entry.status == "Linked" %}
+          <div class="ledger-row bank-row{{ ' bank-row-entered' if in_transactions or linked }}" id="entry-{{ entry.id }}">
+            <span class="chip {{ 'chip-green' if money_coming_in else 'chip-slate' }}">{{ icon("bank") }}</span>
+            <span class="ledger-text">
+              <span class="ledger-title">
+                {# (The bank's own words are always there on hover, since it words things differently and may cut them short.) #}
+                <span class="ledger-what"{% if entry.description %} title="{{ entry.description }}"{% endif %}><strong>{{ reading.method or ("Money in" if money_coming_in else "Money out") }}</strong>{% if words %}<span class="ledger-details"><span class="wide-only"> · </span>{{ words }}</span>{% endif %}</span>
+                {% if maybe %}<a class="tag tag-warning tag-small" href="{{ url_for('transactions.edit', transaction_id=maybe.id) }}" title="A transaction from {{ maybe.transaction_date|nice_date }} has the same amount. Click to see it.">May already be entered</a>{% endif %}
+              </span>
+              <span class="ledger-meta">
+                {%- if entry.account_name %}{{ entry.account_name }} · {% endif %}<span class="nowrap">{{ entry.day|short_date }}</span>
+              </span>
+            </span>
+            <span class="ledger-amount{{ ' money-in' if money_coming_in }}">{{ signed(entry.amount_cents) }}</span>
+            {# A check mark for one that's been checked (Overridden). It can still be entered. #}
+            <span class="bank-check">{% if overridden %}<span class="bank-checked" title="Checked" role="img" aria-label="Checked">{{ icon("check", 20) }}</span>{% endif %}</span>
+            <span class="bank-action">
+              {%- if in_transactions %}
+                <a class="tag tag-active tag-small" href="{{ url_for('transactions.edit', transaction_id=entry.transaction_id) }}">{{ icon("check", 13) }} In Transactions</a>
+              {%- elif linked %}
+                <span class="bank-linked">
+                  <a class="tag tag-active tag-small" href="{{ url_for('transactions.edit', transaction_id=entry.transaction_id) }}">{{ icon("check", 13) }} Linked with AI</a>
+                  {% set after = "It will be Overridden again" if entry.linked_from == "Overridden" else "It will wait to be entered again" %}
+                  <form method="post" action="{{ url_for('bank.unlink', entry_id=entry.id) }}" class="inline"
+                        onsubmit='return confirm({{ ("Unlink this from its transaction? " ~ after ~ ", and it won’t be linked again. The transaction itself stays as it is.")|tojson }});'>
+                    <input type="hidden" name="back" value="{{ request.full_path }}">
+                    <button type="submit" class="tag tag-urgent tag-small tag-button">Unlink</button>
+                  </form>
+                </span>
+              {%- else %}
+                <a class="button button-small" href="{{ url_for('transactions.new', bank_entry=entry.id) }}">Enter into Transactions</a>
+              {%- endif -%}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </details>
+  {% endfor %}
+{% elif filtering %}
+  <p class="empty">Nothing from the bank matches. <a href="{{ url_for('bank.index') }}">Show all</a></p>
+{% elif connected and gathering %}
+  <section class="card bank-empty">
+    <span class="chip chip-sky">{{ icon("bank") }}</span>
+    <h2>Your bank is getting the past 13 months ready</h2>
+    <p class="muted">This usually takes a few minutes. It will show up here within the hour, or click “Fetch now” in <a href="{{ url_for('settings.index', _anchor='bank') }}">Settings</a>.</p>
+  </section>
+{% elif connected %}
+  <p class="empty">Nothing from the bank yet.</p>
+{% elif not set_up %}
+  <p class="empty">The bank isn't connected.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='filters.js') }}" defer></script>{% endblock %}

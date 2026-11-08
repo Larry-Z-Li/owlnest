@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% from "_macros.html" import action_button, record_kind %}
+{% from "_archived.html" import archived_table %}
+{% from "_icons.html" import icon %}
+{% import "_home.html" as drawings %}
+{% block title %}{{ a_property.nickname }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('properties.index') }}">← All properties</a></p>
+{{ record_kind("Property") }}
+<div class="page-header">
+  <h1>{{ a_property.nickname }}{% if a_property.address.strip() %} <span class="subtitle">{{ a_property.address.strip().splitlines()[0] }}</span>{% endif %}</h1>
+  <div class="actions">
+    <a class="button button-secondary button-with-icon" href="{{ url_for('transactions.index', property_id=a_property.id) }}"><span class="button-dollar">{{ icon("dollar", 16) }}</span>Property transactions</a>
+    <a class="button button-secondary" href="{{ url_for('properties.edit', property_id=a_property.id) }}">Edit property</a>
+    {{ action_button(url_for("properties.archive", property_id=a_property.id), "Archive property") }}
+  </div>
+</div>
+
+{% if a_property.llc %}<p class="property-llc">{{ icon("bank", 16) }} {{ a_property.llc.name }}</p>{% endif %}
+
+{# Bedrooms, bathrooms and square feet, such as "3 beds · 2.5 baths · 1,916 sq ft". #}
+{% if facts %}
+  <p class="property-facts">{{ facts }}</p>
+{% else %}
+  <p class="property-facts muted"><a href="{{ url_for('properties.edit', property_id=a_property.id) }}">Add its bedrooms, bathrooms and square feet</a></p>
+{% endif %}
+
+{# What needs attention here (leases and insurance ending, reminders, new requests from tenants).
+   There's no Dismiss: each stays until it's taken care of. #}
+{% if warnings %}
+  <section class="message message-warning property-warnings" aria-label="Needs attention">
+    <strong>Needs attention</strong>
+    <ul>
+      {% for alert in warnings %}
+        <li>
+          {% if alert.urgent %}<span class="tag tag-late">Now</span>{% elif alert.yellow %}<span class="tag tag-warning">Due</span>{% endif %}
+          <a href="{{ alert.link }}">{{ alert.link_text }}</a>{{ alert.rest }}
+          {% if alert.button %}{% set label, address = alert.button %}{{ action_button(address, label, "button-small") }}{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+{# Its photos, one at a time, with "Edit photos" at the top right (static/slideshow.js moves between them).
+   Until there are photos, its drawing of a house. #}
+{% if photos %}
+  <section class="slideshow" aria-label="Photos of {{ a_property.nickname }}">
+    <div class="slides" tabindex="0" aria-label="{{ photos|length }} {{ 'photo' if photos|length == 1 else 'photos' }}{% if photos|length > 1 %}; swipe, or use the arrow keys, to see the others{% endif %}">
+      {% for photo in photos %}
+        {% set address = url_for('files.show', attachment_id=photo.id) %}
+        <figure class="slide">
+          {# The same photo, blurred, fills the space around it (see style.css). #}
+          <img class="slide-backdrop" src="{{ address }}" alt="" aria-hidden="true" loading="{{ 'eager' if loop.first else 'lazy' }}">
+          <img class="slide-photo" src="{{ address }}" alt="Photo {{ loop.index }} of {{ a_property.nickname }}" loading="{{ 'eager' if loop.first else 'lazy' }}">
+        </figure>
+      {% endfor %}
+    </div>
+    {% if photos|length > 1 %}
+      <button type="button" class="slide-button slide-previous" aria-label="Previous photo">{{ icon("left", 28) }}</button>
+      <button type="button" class="slide-button slide-next" aria-label="Next photo">{{ icon("right", 28) }}</button>
+      <p class="slide-count"><span class="slide-number">1</span> of {{ photos|length }}</p>
+    {% endif %}
+    <a class="button button-light slideshow-edit" href="{{ url_for('properties.photos', property_id=a_property.id) }}">{{ icon("pencil", 18) }} Edit photos</a>
+  </section>
+{% else %}
+  <section class="slideshow slideshow-empty drawing-{{ a_property.id % 3 }}" aria-label="Photos of {{ a_property.nickname }}">
+    {{ drawings.house(a_property.id % 3) }}
+    <p class="slideshow-empty-text">No photos yet</p>
+    <a class="button button-light slideshow-edit" href="{{ url_for('properties.photos', property_id=a_property.id) }}">{{ icon("pencil", 18) }} Add photos</a>
+  </section>
+{% endif %}
+
+{# The home's estimated value, looked up from RentCast about once a month (see home_values.py). #}
+{% if value or lookups_on %}
+<section class="card" id="value">
+  <h2>Estimated value</h2>
+  {% if value %}
+    <p class="big-number">{{ value.value_cents|dollars }}</p>
+    {% if value.own %}
+      <p>
+        Your own value, set {{ value.asked_at|nice_date }}. It's shown instead of RentCast's{% if rentcast_value %}, whose latest estimate is {{ rentcast_value.value_cents|dollars }} ({{ rentcast_value.asked_at|nice_date }}){% endif %}.
+        To show RentCast's again, <a href="{{ url_for('properties.edit', property_id=a_property.id) }}">empty it on the Edit page</a>.
+      </p>
+    {% else %}
+      <p>
+        {% if value.low_cents and value.high_cents %}Most likely between {{ value.low_cents|dollars }} and {{ value.high_cents|dollars }}.{% endif %}
+        From RentCast, {{ value.asked_at|nice_date }}. It's looked up again about once a month.
+      </p>
+    {% endif %}
+  {% endif %}
+  {% if last_lookup and last_lookup.value_cents is none and last_lookup.problem %}
+    <div class="message message-warning">The lookup on {{ last_lookup.asked_at|nice_date }} didn't work: {{ last_lookup.problem }} It's tried again a week later.</div>
+  {% endif %}
+  {% if lookups_on and not a_property.look_up_value %}
+    {% if not value %}<p class="muted">Not looked up. To see its estimated value, <a href="{{ url_for('properties.edit', property_id=a_property.id) }}">edit the property</a> and tick “Look up its estimated value each month”.</p>{% endif %}
+  {% elif lookups_on and not address_has_zip %}
+    <p class="muted">To look up its value, <a href="{{ url_for('properties.edit', property_id=a_property.id) }}">add the city, state and ZIP code to its address</a>.</p>
+  {% elif lookups_on and not last_lookup %}
+    <p class="muted">Its value will be looked up within the next hour or so.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card" id="lease">
+  <div class="section-header">
+    <h2>Current lease</h2>
+    <a class="button button-secondary" href="{{ url_for('properties.previous_leases', property_id=a_property.id) }}">Previous leases ({{ previous_count }})</a>
+  </div>
+  {% if lease %}
+    <dl class="details">
+      <dt>Tenants</dt><dd>{{ lease.tenant_names }}</dd>
+      {% if lease.tenant_phone %}<dt>Phone</dt><dd>{{ lease.tenant_phone }}</dd>{% endif %}
+      {% if lease.tenant_email %}<dt>Email</dt><dd><a href="mailto:{{ lease.tenant_email }}">{{ lease.tenant_email }}</a></dd>{% endif %}
+      <dt>Rent</dt><dd>{{ lease.rent_cents|money }} a month{% if lease.next_rent_period %} <span class="muted">({{ lease.next_rent_period.amount_cents|money }} from {{ lease.next_rent_period.starts_on|nice_date }})</span>{% endif %}</dd>
+      <dt>Lease</dt><dd>{{ lease.start_date|nice_date }} to {{ lease.end_date|nice_date if lease.end_date else "month-to-month" }}</dd>
+      {% set walked = lease.walkthroughs|map(attribute="kind")|list %}
+      <dt>Walkthroughs</dt>
+      <dd>Move-in: {{ "done" if "Move-in" in walked else "not yet" }} · Move-out: {{ "done" if "Move-out" in walked else "not yet" }}</dd>
+    </dl>
+    <div class="button-row">
+      <a class="button" href="{{ url_for('leases.detail', lease_id=lease.id) }}">Open lease</a>
+      <a class="button button-secondary" href="{{ url_for('leases.extend_form', lease_id=lease.id) }}">Extend lease</a>
+      <a class="button button-secondary" href="{{ url_for('leases.end_form', lease_id=lease.id) }}">End lease</a>
+    </div>
+  {% else %}
+    <p class="muted">{{ a_property.nickname }} has no current lease.</p>
+    <a class="button" href="{{ url_for('leases.new', property_id=a_property.id) }}">Add a lease</a>
+  {% endif %}
+</section>
+
+<section class="card" id="insurance">
+  <div class="section-header">
+    <h2>Insurance</h2>
+    <a class="button button-secondary" href="{{ url_for('insurances.new', property_id=a_property.id) }}">Add insurance</a>
+  </div>
+  {% if insurances %}
+    <table class="list">
+      <thead>
+        <tr><th scope="col">Kind</th><th scope="col">Company</th><th scope="col">Policy</th><th scope="col">Ends</th><th scope="col">Files</th></tr>
+      </thead>
+      <tbody>
+        {% for insurance in insurances %}
+          {% set days_left = (insurance.end_date - today_date).days %}
+          <tr>
+            <td><a href="{{ url_for('insurances.edit', insurance_id=insurance.id) }}">{{ insurance.kind }}</a></td>
+            <td>{{ insurance.company }}</td>
+            <td>{{ insurance.policy_number }}</td>
+            <td>
+              {{ insurance.end_date|nice_date }}
+              {% if days_left < 0 %}<span class="tag tag-late">Ended</span>{% elif days_left <= 60 %}<span class="tag tag-warning">Ends soon</span>{% endif %}
+            </td>
+            <td>{{ insurance.attachments|selectattr("archived_at", "none")|list|length }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No insurance yet. Add each policy (property, renters, and so on) to be reminded 60 days before it ends.</p>
+  {% endif %}
+</section>
+
+<section class="card" id="maintenance">
+  <div class="section-header">
+    <h2>Maintenance</h2>
+    <a class="button button-secondary" href="{{ url_for('maintenance.new', property_id=a_property.id) }}">Add a request</a>
+  </div>
+  {% if open_requests %}
+    <ul>
+      {% for item in open_requests %}
+        <li><a href="{{ url_for('maintenance.edit', request_id=item.id) }}">{{ item.title }}</a> — {{ item.status }}, {{ item.reported_on|nice_date }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No open requests.</p>
+  {% endif %}
+  {% if request_count %}
+    <a class="see-all" href="{{ url_for('maintenance.index', property_id=a_property.id, show='all') }}">
+      <span class="chip chip-teal">{{ icon("wrench", 18) }}</span>
+      <span class="see-all-name">All requests</span>
+      <span class="see-all-count">{{ request_count }}</span>
+      {{ icon("right", 18) }}
+    </a>
+  {% endif %}
+</section>
+
+<section class="card" id="reminders">
+  <div class="section-header">
+    <h2>Reminders</h2>
+    <a class="button button-secondary" href="{{ url_for('reminders.new', property_id=a_property.id) }}">Add a reminder</a>
+  </div>
+  {% if reminders %}
+    <ul>
+      {% for reminder in reminders %}
+        <li><a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}">{{ reminder.kind }}{% if reminder.title %}: {{ reminder.title }}{% endif %}</a> — due {{ reminder.due_date|nice_date }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No reminders for {{ a_property.nickname }}, such as property tax. (Leases and insurances remind you by themselves.)</p>
+  {% endif %}
+</section>
+
+{% if a_property.notes %}
+  <section class="card">
+    <h2>Notes</h2>
+    <p class="multiline">{{ a_property.notes }}</p>
+  </section>
+{% endif %}
+
+{# What's archived from this property: its leases, insurance, photos and files.
+   (Archived properties, requests and transactions are on the Archive page.) #}
+<section class="card" id="archives">
+  <h2>Archives</h2>
+  {% if archives %}
+    {% for heading, items in archives %}
+      <h3>{{ heading }}</h3>
+      {{ archived_table(items, url_for('properties.detail', property_id=a_property.id, _anchor='archives')) }}
+    {% endfor %}
+  {% else %}
+    <p class="muted">Nothing from {{ a_property.nickname }} is archived. Leases, insurance, photos and files you archive or remove are kept here.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}{% if photos|length > 1 %}<script src="{{ url_for('static', filename='slideshow.js') }}" defer></script>{% endif %}{% endblock %}

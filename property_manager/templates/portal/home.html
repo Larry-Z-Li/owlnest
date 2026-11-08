@@ -1,0 +1,51 @@
+{% extends "portal/base.html" %}
+{% from "_status.html" import status_tag %}
+{% block title %}Your home{% endblock %}
+
+{% block content %}
+<h1>Hello, {{ lease.tenant_names }}</h1>
+<p class="muted">{{ home }}</p>
+
+<section class="card portal-emergency">
+  <h2>In an emergency</h2>
+  <p>
+    If anyone is in danger, or you smell gas or see fire or smoke, call <a href="tel:911">911</a> first.
+    For a bad leak, no heat, or anything else that can't wait,
+    {% if landlord_phone %}please also call <a href="tel:{{ landlord_phone }}">{{ landlord_phone }}</a>{% else %}please also call your landlord{% endif %}:
+    a request here may not be seen right away.
+  </p>
+</section>
+
+<section class="card">
+  <div class="section-header">
+    <h2>Repair requests</h2>
+    <a class="button" href="{{ url_for('portal.new_request') }}">Ask for a repair</a>
+  </div>
+  {% if maintenance_requests %}
+    <ul class="portal-list">
+      {% for item in maintenance_requests %}
+        <li>
+          <strong>{{ item.title }}</strong>
+          <br>{{ status_tag(item.status) }} <span class="muted">Sent {{ item.reported_on|nice_date }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">You haven't asked for any repairs yet.</p>
+  {% endif %}
+</section>
+
+{% if settings.business_name.strip() or settings.phone.strip() or settings.mailing_address.strip() %}
+  <section class="card">
+    <h2>Contact</h2>
+    {% if settings.business_name.strip() %}<p><strong>{{ settings.business_name.strip() }}</strong></p>{% endif %}
+    {% if settings.phone.strip() %}<p>Phone: <a href="tel:{{ settings.phone.strip() }}">{{ settings.phone.strip() }}</a></p>{% endif %}
+    {% if settings.mailing_address.strip() %}<p class="multiline">{{ settings.mailing_address.strip() }}</p>{% endif %}
+  </section>
+{% endif %}
+
+<form method="post" action="{{ url_for('portal.leave') }}" class="portal-leave">
+  <p class="muted">Using a shared computer? When you're done:</p>
+  <button type="submit" class="button button-secondary button-small">Forget me on this device</button>
+</form>
+{% endblock %}

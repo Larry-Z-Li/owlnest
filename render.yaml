@@ -1,0 +1,24 @@
+# Render Blueprint for the server (see the README).
+services:
+  - type: web
+    name: owlnest-example
+    runtime: docker
+    # The smallest plan that is always on and can have a disk (0.5 CPU, 512 MB; about $7 a month).
+    plan: 0.5c-512mb
+    region: oregon
+    healthCheckPath: /health
+    disk:
+      name: records
+      mountPath: /var/data
+      sizeGB: 5
+    # Render asks for each of these when the service is made. Copy them from the old service's
+    # Environment page. Don't send them in a message.
+    envVars:
+      - key: PROPERTY_MANAGER_KEY
+        sync: false
+      - key: RENTCAST_API_KEY
+        sync: false
+      - key: PLAID_CLIENT_ID
+        sync: false
+      - key: PLAID_SECRET
+        sync: false

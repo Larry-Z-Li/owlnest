@@ -1,0 +1,38 @@
+{% extends "portal/base.html" %}
+{% from "_macros.html" import text_field, textarea_field %}
+{% block title %}Ask for a repair{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('portal.home') }}">← Back</a></p>
+<h1>Ask for a repair</h1>
+
+<section class="card">
+  {% if limit_reached %}
+    <p>You've sent {{ per_day }} requests today, the most for one day. You can send more tomorrow.</p>
+    <p>If something is urgent, please call.</p>
+    <div class="button-row">
+      <a class="button" href="{{ url_for('portal.home') }}">Back</a>
+    </div>
+  {% else %}
+  {% if not form.is_valid %}
+    <div class="message message-error" role="alert">Nothing was sent yet. Please fix the problems marked in red below.</div>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">
+    {{ text_field(form, "title", "What needs fixing?", required=True, help="A few words, such as: Kitchen sink is leaking") }}
+    {{ textarea_field(form, "description", "Tell us more", required=True, rows=5,
+        help="Where it is, what happened, when it started, and whether we may come in when you're not home.") }}
+    {% set error = form.errors.get("photos") %}
+    <div class="field{% if error %} has-error{% endif %}">
+      <label for="photos">Photos (optional)</label>
+      <p class="help" id="photos-help">Up to {{ max_photos }} photos. They help a lot.{% if not form.is_valid %} If you chose photos before, please choose them again.{% endif %}</p>
+      <input type="file" id="photos" name="photos" multiple accept="{{ accept }}" aria-describedby="photos-help">
+      {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    </div>
+    <div class="button-row">
+      <button type="submit" class="button">Send request</button>
+      <a class="button button-secondary" href="{{ url_for('portal.home') }}">Cancel</a>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

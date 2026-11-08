@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% import "_home.html" as drawings %}
+{% block title %}Properties{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Properties</h1>
+    <p class="list-summary">
+      {{ home_count }} {{ "home" if home_count == 1 else "homes" }}, {{ leased_count }} leased ·
+      {{ monthly_rent|short_money }} a month
+      {%- if total_value %} ·
+        {% if total_value.names|length < home_count %}{{ total_value.names|length }} valued at about{% else %}worth about{% endif %}
+        <strong>{{ total_value.cents|dollars }}</strong>
+      {%- endif %}
+    </p>
+  </div>
+  <div class="page-actions">
+    <a class="button button-secondary" href="{{ url_for('properties.new_llc') }}">Add LLC</a>
+    <a class="button" href="{{ url_for('properties.new') }}">Add a property</a>
+  </div>
+</div>
+
+{# A menu shows its result as soon as she picks (static/filters.js). Without that script, the Show button does. #}
+<form class="filter-bar" method="get" action="{{ url_for('properties.index') }}" data-auto-filter>
+  <label class="filter-wide">Search
+    <input type="search" name="q" value="{{ search }}" placeholder="Name, address or tenant">
+  </label>
+  <label>Show
+    <select name="show">
+      {% for value, text in (("", "All homes"), ("leased", "Leased"), ("vacant", "Vacant")) %}
+        <option value="{{ value }}"{% if show == value %} selected{% endif %}>{{ text }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Sort by
+    <select name="sort">
+      {% for value, text in (("", "Name"), ("lease", "Lease ending soonest"), ("value", "Value"), ("rent", "Rent")) %}
+        <option value="{{ value }}"{% if sort == value %} selected{% endif %}>{{ text }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="button" data-show-button>Show</button>
+  {% if search or show %}<a class="filters-clear" href="{{ url_for('properties.index') }}">Show all</a>{% endif %}
+</form>
+
+{% if groups %}
+  {# One sheet, with each LLC as a band across it and the homes in no LLC at the end. #}
+  <table class="list row-links properties-list">
+    <thead>
+      <tr>
+        <th scope="col">Property</th>
+        <th scope="col">Lease</th>
+        <th scope="col" class="number">Rent</th>
+        <th scope="col" class="number">Est. value</th>
+      </tr>
+    </thead>
+    {% for group in groups %}
+      <tbody>
+        <tr class="llc-band">
+          <th colspan="4" scope="rowgroup">
+            <span class="llc-band-inside">
+              <span class="llc-title">
+                <span class="llc-name">{{ group.name }}</span>
+                {% if group.llc %}<a class="llc-rename" href="{{ url_for('properties.edit_llc', llc_id=group.llc.id) }}" aria-label="Rename {{ group.name }}" title="Rename">{{ icon("pencil", 16) }}</a>{% endif %}
+              </span>
+              <span class="llc-totals">
+                {{ group.rows|length }} {{ "home" if group.rows|length == 1 else "homes" }}
+              </span>
+            </span>
+          </th>
+        </tr>
+        {% for row in group.rows %}
+          {% set lease = row.lease %}
+          {% set tag_words, tag_color = row.lease_tag %}
+          <tr>
+            <td>
+              <span class="home-cell">
+                {# (The name below is the same link for a screen reader, so this one is skipped.) #}
+                <a class="home-thumb-link" href="{{ url_for('properties.detail', property_id=row.property.id) }}" tabindex="-1" aria-hidden="true">
+                  {%- if row.photo %}
+                    <img class="home-thumb" src="{{ url_for('files.show', attachment_id=row.photo.id) }}" alt="" loading="lazy">
+                  {%- else %}
+                    <span class="home-thumb drawing drawing-{{ row.property.id % 3 }}">{{ drawings.house(row.property.id % 3) }}</span>
+                  {%- endif -%}
+                </a>
+                <span class="home-text">
+                  <a class="row-link" href="{{ url_for('properties.detail', property_id=row.property.id) }}">{{ row.property.nickname }}</a>
+                  {% if row.line %}<span class="muted home-line">{{ row.line }}</span>{% endif %}
+                </span>
+              </span>
+            </td>
+            <td>
+              {{ lease.tenant_names if lease else "No current lease" }}
+              <br><span class="tag {{ tag_color }}">{{ tag_words }}</span>
+            </td>
+            <td class="number" data-label="Rent">{{ lease.rent_cents|short_money if lease else "—" }}</td>
+            <td class="number" data-label="Est. value"><strong>{{ row.value.value_cents|dollars if row.value else "—" }}</strong></td>
+          </tr>
+        {% endfor %}
+        {% if not group.rows %}
+          <tr class="llc-no-homes"><td colspan="4" class="muted">No homes yet. Choose this LLC when you add or edit a property.</td></tr>
+        {% endif %}
+      </tbody>
+    {% endfor %}
+  </table>
+{% else %}
+  <p class="empty">{% if search or show %}No properties match.{% else %}No properties yet. Click “Add a property” to start.{% endif %}</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='filters.js') }}" defer></script>{% endblock %}

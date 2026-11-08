@@ -1,0 +1,61 @@
+{#
+  Files attached to a record (see attachments.py):
+    file_list   shows them, with Open, Download and Remove;
+    files_field is the "choose files" box inside a record's own form;
+    upload_form is a small form of its own that adds files to a record.
+  (A file list must not sit inside another form: its Remove buttons are forms.)
+#}
+{% from "_macros.html" import action_button %}
+
+{% macro file_list(files, empty_text="No files yet.") %}
+  {% if files %}
+    <ul class="document-list">
+      {% for file in files %}
+        {% set address = url_for("files.show", attachment_id=file.id) %}
+        <li>
+          <a class="document-preview" href="{{ address }}" target="_blank" rel="noopener">
+            {% if file.file_path|is_picture %}
+              <img src="{{ address }}" alt="" loading="lazy">
+            {% else %}
+              <span class="document-icon" aria-hidden="true">PDF</span>
+            {% endif %}
+          </a>
+          <div class="document-text">
+            {{ file.original_name or file.file_path }}
+            <br><span class="muted">Added {{ file.created_at|nice_date }}</span>
+            <div class="document-actions">
+              <a href="{{ address }}" target="_blank" rel="noopener">Open</a>
+              <a href="{{ address }}?download=1">Download</a>
+              {{ action_button(url_for("files.archive", attachment_id=file.id), "Remove", "button-small button-secondary") }}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">{{ empty_text }}</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro files_field(form, accept, label="Attach files") %}
+  {% set error = form.errors.get("files") %}
+  <div class="field{% if error %} has-error{% endif %}">
+    <label for="files">{{ label }}</label>
+    <p class="help" id="files-help">PDFs or photos (iPhone photos are fine), up to 20 MB each. You can choose several at once.</p>
+    <input type="file" id="files" name="files" multiple accept="{{ accept }}" aria-describedby="files-help">
+    {% if error %}<p class="error" id="files-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro upload_form(owner_kind, owner_id, accept, button="Add files") %}
+  {% set box = "files-" ~ owner_kind ~ "-" ~ owner_id %}
+  <form method="post" action="{{ url_for('files.add', owner_kind=owner_kind, owner_id=owner_id) }}"
+        enctype="multipart/form-data" class="document-upload">
+    <div class="field">
+      <label for="{{ box }}">Add files</label>
+      <p class="help" id="{{ box }}-help">PDFs or photos (iPhone photos are fine), up to 20 MB each. You can choose several at once.</p>
+      <input type="file" id="{{ box }}" name="files" multiple accept="{{ accept }}" aria-describedby="{{ box }}-help">
+    </div>
+    <button type="submit" class="button button-secondary">{{ button }}</button>
+  </form>
+{% endmacro %}

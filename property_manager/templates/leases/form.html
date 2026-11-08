@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, textarea_field, money_field, late_fee_fields, form_problems, record_kind %}
+{% block title %}{{ "Edit lease" if lease else "Add a lease" }}{% endblock %}
+
+{% block content %}
+{% if lease %}
+  <p class="breadcrumb"><a href="{{ url_for('leases.detail', lease_id=lease.id) }}">← Back to the lease</a></p>
+  {{ record_kind("Lease") }}
+  <h1>Edit lease <span class="subtitle">{{ a_property.nickname }}</span></h1>
+{% else %}
+  <p class="breadcrumb"><a href="{{ url_for('properties.detail', property_id=a_property.id) }}">← Back to {{ a_property.nickname }}</a></p>
+  {{ record_kind("Lease") }}
+  <h1>Add a lease <span class="subtitle">{{ a_property.nickname }}</span></h1>
+{% endif %}
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post">
+    {% if not lease %}<input type="hidden" name="property_id" value="{{ a_property.id }}">{% endif %}
+    {{ text_field(form, "tenant_names", "Tenants", required=True, help="Everyone on the lease, such as: Jane Doe and John Doe") }}
+    {{ text_field(form, "tenant_phone", "Tenants' phone", type="tel", size="short") }}
+    {{ text_field(form, "tenant_email", "Tenants' email", type="email") }}
+    <div class="field-row">
+      {{ text_field(form, "start_date", "Start date", type="date", size="short", required=True, help="Rent is due on this day each month. In a shorter month, it's the last day.") }}
+      {{ text_field(form, "end_date", "End date", type="date", size="short", help="Leave empty for month-to-month.") }}
+    </div>
+    {% if lease %}
+      {{ money_field(form, "deposit", "Security deposit") }}
+      <p class="muted">To change the rent or its late fee, use the <a href="{{ url_for('leases.detail', lease_id=lease.id, _anchor='rent') }}">Rent rate list</a> on the lease's page.</p>
+    {% else %}
+      <div class="field-row">
+        {{ money_field(form, "monthly_rent", "Monthly rent", required=True) }}
+        {{ money_field(form, "deposit", "Security deposit") }}
+      </div>
+    {% endif %}
+    {% if not lease %}
+      {{ late_fee_fields(form) }}
+    {% endif %}
+    {{ textarea_field(form, "notes", "Notes") }}
+    {% if not lease %}
+      <p class="muted">When you add the lease, the app makes the tenants' own link to the tenant portal, ready for you to send.</p>
+    {% endif %}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if lease else "Add lease" }}</button>
+      <a class="button button-secondary" href="{{ url_for('leases.detail', lease_id=lease.id) if lease else url_for('properties.detail', property_id=a_property.id) }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

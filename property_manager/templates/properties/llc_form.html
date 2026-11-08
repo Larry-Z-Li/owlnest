@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import text_field, form_problems, record_kind %}
+{% block title %}{{ "Rename " ~ llc.name if llc else "Add LLC" }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb"><a href="{{ url_for('properties.index') }}">← All properties</a></p>
+{{ record_kind("LLC") }}
+<h1>{{ "Rename " ~ llc.name if llc else "Add LLC" }}</h1>
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post">
+    {{ text_field(form, "name", "Name", required=True, help="Such as Maple Grove Holdings LLC.") }}
+    <div class="button-row">
+      <button type="submit" class="button">{{ "Save changes" if llc else "Add LLC" }}</button>
+      <a class="button button-secondary" href="{{ url_for('properties.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

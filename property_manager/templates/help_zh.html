@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block page_language %}zh-Hans{% endblock %}
+{% block title %}帮助{% endblock %}
+
+{#
+  The Simplified Chinese version of help.html. The app's menus and buttons stay in
+  English, so each button's English words are quoted exactly, followed by their
+  meaning in Chinese, to make them easy to find on the screen.
+  Keep the section ids the same as in help.html (a test checks this).
+#}
+
+{% block content %}
+{% include "_help_language.html" %}
+<h1>帮助</h1>
+<p>常见问题的解答。点击下面的题目可以直接跳到那一段。</p>
+
+<nav class="card help-topics" aria-label="帮助题目">
+  <ul>
+    <li><a href="#opening-and-closing">打开和关闭程序</a></li>
+    <li><a href="#signing-in">登录和密码</a></li>
+    <li><a href="#getting-around">如何找到各个页面</a></li>
+    <li><a href="#alerts">“需要处理”（Needs attention）和提醒</a></li>
+    <li><a href="#properties-and-leases">房产和租约</a></li>
+    <li><a href="#walkthroughs-and-extensions">验房记录和续租</a></li>
+    <li><a href="#ending-leases">结束租约和以前的租约</a></li>
+    <li><a href="#insurance">保险</a></li>
+    <li><a href="#transactions">收支记录（Transactions）</a></li>
+    <li><a href="#maintenance">维修请求（Maintenance）</a></li>
+    <li><a href="#reports">给会计师的报表（Reports）</a></li>
+    <li><a href="#tenant-portal">租客页面</a></li>
+    <li><a href="#files">添加文件</a></li>
+    <li><a href="#notes">笔记（Notes）</a></li>
+    <li><a href="#archive">删除的东西怎么找回</a></li>
+    <li><a href="#backups">备份</a></li>
+    <li><a href="#problems">遇到问题怎么办</a></li>
+  </ul>
+</nav>
+
+<section class="card" id="opening-and-closing">
+  <h2>打开和关闭程序</h2>
+  <ul>
+    {% if config.PUBLIC_ADDRESS %}
+    <li><strong>在任何电脑或手机上：</strong>用网页浏览器打开 <strong>{{ config.PUBLIC_ADDRESS }}</strong>，然后用您的名字和密码登录（见<a href="#signing-in">登录和密码</a>）。可以把它加到书签，方便下次找到。在 iPhone 上，点“分享”按钮，再点“添加到主屏幕”，就会有一个图标。</li>
+    {% endif %}
+    <li><strong>在装了程序的电脑上：</strong>双击桌面上的“{{ app_name }}”图标（蓝色方块上有一只白色猫头鹰）。几秒钟后，程序会在网页浏览器里打开，不需要登录。</li>
+    <li>电脑或手机需要连上网。您的记录存在程序的服务器上，所以大家看到的都是同一份记录。如果别人刚改了东西，刷新一下页面就能看到。</li>
+    <li><strong>关闭：</strong>在网页浏览器里，直接关掉那个页面就可以。装了程序的电脑上，点击任意页面右上角的 “Close the app”（关闭程序）；在 Mac 上，也可以在屏幕下方的程序坞里右键点击“{{ app_name }}”，然后选择“退出”。记录仍然保存在服务器上。</li>
+    <li>您输入的内容会随时自动保存，关闭前不需要“保存”。</li>
+    <li>程序一直开着也没关系。</li>
+  </ul>
+</section>
+
+<section class="card" id="signing-in">
+  <h2>登录和密码</h2>
+  <ul>
+    <li>输入您的名字和密码。名字不分大小写，密码要分大小写。</li>
+    <li>每台电脑或手机在您最后一次使用后的 30 天内都会保持登录，所以不需要常常输入密码。</li>
+    <li>在别人也用的电脑或手机上，用完后请点右上角的 <strong>Sign out</strong>（退出登录）。</li>
+    <li><strong>忘了密码？</strong>请另一位可以登录的人帮您设一个新密码：在 <a href="{{ url_for('settings.index') }}#people">Settings</a>（设置）的 “People who can sign in”（可以登录的人）里，点击 “New password”（新密码）。（装了程序的电脑也可以做。）</li>
+    <li>如果连续输错 10 次密码，这个名字就会被<strong>锁住</strong>，这样别人没办法一直猜。已经登录的电脑和手机还可以继续用，首页也会显示它被锁住了。请负责管理程序的人帮您解锁（在 Settings（设置）里点 “Unlock”（解锁））。设一个新密码也会解锁。</li>
+    <li><strong>让别人也能登录：</strong>在 Settings（设置）里点击 “Add a person”（添加一个人）。他们可以看到和修改您所有的记录。请当面或打电话告诉他们密码。点击 “Remove”（移除）就不能再登录了。</li>
+    <li><strong>手机丢了？</strong>在 Settings（设置）里改密码（“Change my password”，修改我的密码）。这样其他所有电脑和手机都会退出登录。</li>
+  </ul>
+</section>
+
+<section class="card" id="getting-around">
+  <h2>如何找到各个页面</h2>
+  <ul>
+    <li>每个页面顶部的菜单可以进入各个页面。Archive（归档）、Settings（设置）和 Help（帮助）在页面右上角的小字链接里。</li>
+    <li><strong>Home</strong>（首页）最上面是一条蓝色横幅：您的房子大概值多少钱，还有添加收支记录和维修请求的按钮。下面四个方块显示这个月收到的房租、今年的净现金流、还没修好的维修，以及最近一次从银行获取到的新入账笔数（点一下就能过去）。再往下是您的房产、维修请求、需要处理的事情，以及最近一次备份的时间。</li>
+    <li><strong>Properties</strong>（房产）列出您的房子。点击一个房产，可以看到它现在的租约、保险、维修请求和提醒。</li>
+    <li><strong>Transactions</strong>（收支）是所有进出的钱。<strong>Maintenance</strong>（维修）是所有维修请求，包括您自己加的和租客发来的。</li>
+    <li>在列表里点击名字就能打开那条记录。记录页面上有 <strong>Edit</strong>（修改）和 <strong>Archive</strong>（归档）按钮。</li>
+  </ul>
+</section>
+
+<section class="card" id="alerts">
+  <h2>“需要处理”（Needs attention）和提醒</h2>
+  <ul>
+    <li>首页的 “Needs attention”（需要处理）会列出所有需要您处理的事情：租客发来的新请求、60 天内到期的租约和保险、已经过了结束日期的租约，以及您自己加的提醒。标着红色 <strong>Now</strong>（现在）的已经到期；其他的是快到了。</li>
+    <li>有需要处理的事情时，每个页面最上面会出现一个黄色（或红色）的 “needs attention” 按钮，点它会打开 <strong>Reminders</strong>（提醒）页面，那里列出所有事项。点其中一项就会打开对应的页面。租金、租约和保险的提醒，处理好之后会自动消失。</li>
+    <li>提醒不能关掉：处理好之前会一直在。您自己加的提醒，处理好后点 <strong>Done</strong>（完成）。租约的提醒在续租或结束租约后就会消失；保险的提醒在改成续保后的日期（或者加上新保单、把旧的归档）后消失。房产页面最上面也会显示这处房子的提醒。</li>
+    <li>租约和保险会自动提醒您。其他有日期的事情，比如房产税，可以在首页或房产页面点击 “Add a reminder”（添加提醒）。处理好以后点击 <strong>Done</strong>（完成）；重复的提醒会自动移到下一次的日期。</li>
+  </ul>
+</section>
+
+<section class="card" id="properties-and-leases">
+  <h2>房产和租约</h2>
+  <ul>
+    <li>要添加房子，打开 <a href="{{ url_for('properties.index') }}">Properties</a>（房产），点击 “Add a property”（添加房产）。</li>
+    <li>房子按 <strong>LLC</strong> 分组列出，不属于任何 LLC 的放在最后。点击 “Add LLC”（添加 LLC）可以添加一个 LLC，只需要填名字；添加或修改房产时可以选择它属于哪个 LLC。</li>
+    <li>房产页面会把房子的<strong>照片</strong>做成幻灯片：点左右箭头，或者在手机上用手指滑动。要添加或删除照片，点右上角的 “Edit photos”（编辑照片）或 “Add photos”（添加照片）。iPhone 的照片也可以，一次可以选好几张。删除的照片会放进 Archive（归档）。</li>
+    <li>房产页面会显示几间卧室、几间浴室和面积（平方英尺）。点击 “Edit property”（修改房产）就能填写。如果这处房子会从 RentCast 查估价（见下面），您没填的部分 RentCast 会自动补上。</li>
+    <li>每个房产有<strong>一份现在的租约</strong>。在房产页面点击 “Add a lease”（添加租约），填写租客的名字、电话和邮箱、日期、房租和押金。按月租的话，结束日期留空。</li>
+    <li>添加租约时，程序也会为租客生成一个租客页面的专属链接（见下面）。</li>
+    <li>要看房子的<strong>估价</strong>，点击 “Edit property”（修改房产），勾选 “Look up its estimated value each month”（每月查一次估价）。估价每个月从 RentCast 查一次，显示在房产页面上；首页会把它们加起来。地址要写完整，包括邮编（ZIP code）。这只是根据网上资料的估计，不是正式的评估。</li>
+    <li>点击 “Open lease”（打开租约）可以看到这份租约的所有内容：租客页面链接、验房记录、续租记录，以及租约文件（比如签好的租约）。</li>
+  </ul>
+</section>
+
+<section class="card" id="walkthroughs-and-extensions">
+  <h2>验房记录和续租</h2>
+  <ul>
+    <li>每份租约有两份<strong>验房记录</strong>：<strong>Move-in</strong>（入住前，租客搬进来之前的房子状况）和 <strong>Move-out</strong>（搬走后）。在租约页面点击 “Add move-in walkthrough”（添加入住验房记录），填写日期和备注，再附上验房报告和照片。</li>
+    <li>要<strong>续租</strong>，点击 “Extend lease”（续租），选择新的结束日期，附上签好的续租协议。如果房租也要变，填上 “New monthly rent”（新的月租）和开始的日期；不变的话就留空。租约页面会保留每一次续租的记录。</li>
+    <li>租约页面有一个 <strong>Rent</strong>（房租）列表：每个月租金额和它开始的日期。程序用今天生效的那一个，所以新房租到了日期会自动生效。租约期间要涨租，点 “Add a rent change”（添加房租变化）；要改某一条，点 <strong>Edit</strong>（修改）；要删掉某一条，点 <strong>Remove</strong>（删除）。收支记录不会变：收到房租还是要自己添加。</li>
+    <li><strong>房租提醒：</strong>从房租到期那天起（每月的到期日，就是租约开始的那一天），首页和租约页面最上面会显示提醒，直到房租和滞纳金全部付清。每收到一笔钱，就添加一条收支记录，用途选 Rental Income 或 Late Fees（滞纳金），日期填实际付款的那天。即使晚一点才记上，滞纳金也按那个日期算。每条房租有自己的滞纳金规则，只加一次：默认是晚 5 天时加房租的 5%，可以修改。</li>
+    <li>到期的房租会显示为<strong>黄色</strong>，直到加上滞纳金（默认迟 5 天，除非您改过），之后显示为<strong>红色</strong>。</li>
+    <li>要免掉的话，在提醒上点 “Waive late fee”（免滞纳金）或 “Waive rest of rent”（免掉剩下的房租）。</li>
+  </ul>
+</section>
+
+<section class="card" id="ending-leases">
+  <h2>结束租约和以前的租约</h2>
+  <ul>
+    <li>租客搬走时，点击 “End lease”（结束租约），选择最后一天。如果比租约的结束日期早，程序会提醒您，并请您确认。</li>
+    <li>结束的租约会移到这个房产的 <strong>Previous leases</strong>（以前的租约，房产页面上的按钮）里，还可以打开查看；租客的链接会显示一个“抱歉”页面。</li>
+    <li>不小心结束了租约？在 Previous leases 里打开它，点击 <strong>Revive lease</strong>（恢复租约）。它会重新变成现在的租约，租客原来的链接也能再用。</li>
+    <li>租约页面最下面的 “Delete this lease”（删除这份租约）只用于加错的租约，它会移到 Archive（归档）。</li>
+  </ul>
+</section>
+
+<section class="card" id="insurance">
+  <h2>保险</h2>
+  <ul>
+    <li>每个房产可以有好几份保险，比如房屋保险和租客保险。在房产页面点击 “Add insurance”（添加保险），填写种类、保险公司、保单号和日期，附上保单。</li>
+    <li>保单到期前 60 天，首页会提醒您。续保后，改一下日期（附上新保单），或者添加新保单、把旧的归档。</li>
+    <li>这里的保险只是记录和提醒，不和任何钱款关联。</li>
+  </ul>
+</section>
+
+<section class="card" id="transactions">
+  <h2>收支记录（Transactions）</h2>
+  <ul>
+    <li>所有的钱都记在 <a href="{{ url_for('transactions.index') }}">Transactions</a>（收支）里：房租、维修、保险、房贷，什么都可以。点击 “Add a transaction”（添加一笔）。</li>
+    <li>选择 <strong>Money in</strong>（收入）或 <strong>Money out</strong>（支出），填写金额、房产和用途（<strong>Purpose</strong>，比如 Rental Income 房租、Repair &amp; Maintenance 维修）。支出显示为红色的负数。</li>
+    <li><strong>Tenant</strong>（租客）留空的话，程序会按那天的租约自动填上。</li>
+    <li><strong>银行记录（From the bank）：</strong>连接银行后，Transactions 页面上方的按钮会显示银行的记录（最多过去 13 个月），包括收入和支出，每天更新一次（Settings 里有 <strong>Fetch now</strong>（立即获取）按钮）。这里的内容不能修改。想记进账里的，点 <strong>Enter into Transactions</strong>（记入收支记录）：日期、金额、付款方式和备注都已填好，您只要选房产和用途。保存后，它会出现在 Transactions 里，带一个 <strong>BOFA</strong> 标记，这里则标为 <strong>In Transactions</strong>（已记入）。来自银行的收支记录不能归档。点击 <strong>Return to From the bank</strong>（退回银行记录），它会从 Transactions 里移除，回到 From the bank，可以重新记入。标着 <strong>Linked with AI</strong>（AI 已关联）的记录，是和您自己输入的收支记录配对的；点击可查看那条记录，点 <strong>Unlink</strong>（取消关联）可撤销。“May already be entered” 表示这笔可能您已经手动记过了。<strong>Accounts</strong>（账户）按钮会列出已连接的账户，<strong>Add account</strong>（添加账户）可以连接更多账户，可以用同一个登录名，也可以用另一个登录名。这个连接只能读取，不能动用账户里的钱。银行每年要求续一次，首页会提前一个月提醒您。</li>
+    <li>如果是某个维修的账单，选择对应的 <strong>Maintenance request</strong>（维修请求）。这笔钱的用途会自动跟维修请求的类型一样，维修请求页面也会显示目前一共花了多少。</li>
+    <li>可以附上收据。列表上方可以只看某个房产、某种用途或某段日期，下面有合计。点击日期可以修改。</li>
+  </ul>
+</section>
+
+<section class="card" id="maintenance">
+  <h2>维修请求（Maintenance）</h2>
+  <ul>
+    <li><a href="{{ url_for('maintenance.index') }}">Maintenance</a>（维修）列出所有请求，最新的在前面。点击 “Add a request”（添加请求），或者点击某个请求来修改。</li>
+    <li>每个请求有房产、类型（比如 Repair &amp; Maintenance 维修、Appliances &amp; Furnishings 家电家具）、负责维修的公司、照片和收据，以及状态：<strong>Open</strong>（待处理）、<strong>In progress</strong>（处理中）或 <strong>Closed</strong>（已完成）。待处理和处理中的请求也会显示在首页。</li>
+    <li>要改状态，直接在列表里（首页也可以）点一下状态，选另一个就行，马上就保存了。不再属于这个列表的请求（比如刚改成 Closed 的）会滑走；想要回来，点下面提示里的 <strong>Undo</strong>（撤销）。</li>
+    <li>租客从租客页面发来的请求会注明，在您打开之前标着 “New from tenant”（租客新发来的）。租客能看到您设的状态。</li>
+    <li>要记某个请求的账单，打开它，点击 “Add a transaction for this request”（为这个请求添加一笔）。一个请求可以有好几笔。</li>
+  </ul>
+</section>
+
+<section class="card" id="reports">
+  <h2>给会计师的报表（Reports）</h2>
+  <ul>
+    <li><a href="{{ url_for('reports.index') }}">Reports</a>（报表）显示您的现金流：所有收支按用途加总，每一大类（收入、运营支出、房贷和贷款）下面有小计，还有净运营收入（Net operating income）和净现金流（Net cash flow）。</li>
+    <li>可以选择全部房产、某个 LLC 或某一处房产，选择日期，以及按<strong>月份</strong>（By month）、<strong>房产</strong>（By property）还是 <strong>LLC</strong>（By LLC）分列。选好后报表会马上更新。LLC 的报表包括它名下房产的收支，以及这个 LLC 本身的收支。</li>
+    <li>报表下面有同样数字的图表，点 “See charts”（看图表）可以直接跳过去。</li>
+    <li>转账类（比如押金）列在最下面，但不算在现金流里。</li>
+    <li>给会计师的话，点击 <strong>Download Excel</strong>（下载 Excel，包括报表和其中每一笔收支的清单）或 <strong>Download PDF</strong>（下载 PDF，可以直接打印或发邮件）。</li>
+  </ul>
+</section>
+
+<section class="card" id="tenant-portal">
+  <h2>租客页面</h2>
+  <ul>
+    <li>每份租约都有自己的租客页面链接，租客可以用手机在那里给您发维修请求（可以加照片），并看到每个请求的状态。他们的请求会出现在 Maintenance（维修）里。</li>
+    <li>在租约页面的 <strong>Tenant portal</strong>（租客页面）里，点击 “Copy link”（复制链接）粘贴到短信里，或者点击 “Email it to the tenants”（用邮件发给租客）。链接没有密码，所以只发给租客本人。</li>
+    <li>如果链接被不该看到的人拿到了，点击 “Make a new link”（生成新链接），把新链接发给租客，旧链接就不能用了。</li>
+    <li>租约结束后，链接会显示一个“抱歉”页面。恢复租约后链接又能用了。</li>
+  </ul>
+</section>
+
+<section class="card" id="files">
+  <h2>添加文件</h2>
+  <ul>
+    <li>租约、验房记录、续租记录、保险、维修请求和收支记录都可以附上文件：PDF 或照片（iPhone 照片也可以），每个最大 20 MB，可以一次选好几个。</li>
+    <li>点击文件可以打开，点击 “Download”（下载）可以存一份。“Remove”（移除）会把它移到 Archive（归档）。</li>
+    <li>每次备份都包含这些文件。</li>
+  </ul>
+</section>
+
+<section class="card" id="notes">
+  <h2>笔记（Notes）</h2>
+  <p>点击右上角的 <strong>Notes</strong>（笔记），可以记下任何文字。写好后点 “Add note”（添加笔记）。点 <strong>Archive</strong>（归档）会把笔记放进 Archive 页面，在那里可以恢复或永久删除。</p>
+</section>
+
+<section class="card" id="archive">
+  <h2>删除的东西怎么找回</h2>
+  <ul>
+    <li>程序里的东西永远不会真正删除。点击 <strong>Archive</strong>（归档）或 <strong>Remove</strong>（移除）只是把记录藏起来保存好：
+      归档的房产、维修请求和收支记录在 <a href="{{ url_for('archive.index') }}">Archive</a>（归档）页面；
+      一处房产自己的归档租约、保险、照片和文件在它页面最下面的 <strong>Archives</strong>（归档）里；
+      从维修请求或收支记录上移除的文件在它自己的页面上。</li>
+    <li>刚归档时，页面上方会出现一个带 <strong>Undo</strong>（撤销）按钮的提示，点它就能马上恢复。</li>
+    <li>归档一处房产时，它的租约、保险、维修请求和提醒也会一起归档；恢复房产时，它们也会一起回来。它的收支记录不动：房子卖了，钱还是照样算。</li>
+    <li>要找回，点它旁边的 “Restore”（恢复）。如果一笔收支记录连着一个已经归档的维修请求，会先问您：现在恢复的话，连接会断掉；想保留连接，就先恢复那个维修请求。</li>
+    <li>要彻底删除，在 Archive（归档）页面点击 <strong>Delete forever</strong>（永久删除）。这不能撤销（以前的备份里还有）。永久删除一处房产时，它的租约、保险、提醒和照片也会一起删除；但它的维修请求和收支记录要先永久删除，房产才能永久删除。</li>
+  </ul>
+</section>
+
+<section class="card" id="backups">
+  <h2>备份</h2>
+  <ul>
+    <li>程序每天都会在服务器上自动备份所有内容。</li>
+    <li>每台装了程序的电脑，在程序打开时，每天也会把最新的备份存一份到“文稿”（Documents）文件夹里的 “Property Manager Backups” 文件夹。这样即使服务器出了问题，您的记录也不会丢。</li>
+    <li>程序会保留最近 10 天里每隔一天的一份备份，以及这个月之前 5 个月每月一份。更早的会被删除。</li>
+    <li>想随时多备份一次，在 <a href="{{ url_for('settings.index') }}#backups">Settings</a>（设置）里点击 “Back up now”（立即备份）。</li>
+    <li>如果 7 天都没有备份成功，首页会显示警告。</li>
+    <li>如果需要恢复到以前的备份，请找负责管理程序的人帮忙（需要在服务器上操作）。</li>
+  </ul>
+</section>
+
+<section class="card" id="problems">
+  <h2>遇到问题怎么办</h2>
+  <ul>
+    <li>表单上方出现红色的 <strong>“Nothing was saved yet”</strong>（还没有保存），说明有地方需要改。找到输入框下面的红字，改好以后再点一次按钮。您已经输入的内容都还在。</li>
+    <li>出现 <strong>“Something went wrong”</strong>（出错了）页面：返回上一页再试一次。如果一直出错，记下当时在做什么，然后请人帮忙。</li>
+    <li>出现 <strong>“Can't reach your records right now”</strong>（暂时连不上您的记录）：检查电脑有没有连上网，然后刷新页面。</li>
+    <li>出现 <strong>“The app's server is restarting”</strong>（服务器正在重启）：等一两分钟，再刷新页面。程序更新之后会出现这种情况。</li>
+    <li><strong>程序打不开</strong>：在浏览器地址栏输入 <strong>127.0.0.1:8642</strong>。如果还是不行，重启电脑再试。</li>
+    <li><strong>东西不见了</strong>：去 <a href="{{ url_for('archive.index') }}">Archive</a>（归档）页面找找。</li>
+  </ul>
+</section>
+{% endblock %}

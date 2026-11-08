@@ -1,0 +1,36 @@
+{#
+  A table of archived records, each with Restore and Delete forever (the two buttons the same size).
+  items come from views/archive.py (_items). back is the page to come back to afterwards.
+  Restore first asks item.restore_question, when there is one (OK or Cancel).
+#}
+{% macro archived_table(items, back) %}
+  <table class="list archived">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Archived on</th>
+        <th scope="col"><span class="visually-hidden">Restore or delete</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.archived_at|nice_datetime }}</td>
+          <td class="row-actions">
+            <form method="post" action="{{ url_for('archive.restore', kind=item.kind, record_id=item.id) }}" class="inline"
+                  {%- if item.restore_question %} onsubmit='return confirm({{ item.restore_question|tojson }});'{% endif %}>
+              <input type="hidden" name="back" value="{{ back }}">
+              <button type="submit" class="button button-small button-secondary">Restore</button>
+            </form>
+            <form method="post" action="{{ url_for('archive.delete_forever', kind=item.kind, record_id=item.id) }}" class="inline"
+                  onsubmit='return confirm({{ item.delete_question|tojson }});'>
+              <input type="hidden" name="back" value="{{ back }}">
+              <button type="submit" class="button button-small button-danger">Delete forever</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}

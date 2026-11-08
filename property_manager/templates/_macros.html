@@ -1,0 +1,187 @@
+{#
+  Reusable pieces for pages and forms. Each form field shows its label, optional
+  help text, and any error message right under the box. Use them like this:
+
+    {% from "_macros.html" import text_field %}
+    {{ text_field(form, "full_name", "Full name", required=True) }}
+#}
+
+{% macro _describedby(name, help, error) -%}
+  {%- set ids = [] -%}
+  {%- if help %}{% set ids = ids + [name ~ "-help"] %}{% endif -%}
+  {%- if error %}{% set ids = ids + [name ~ "-error"] %}{% endif -%}
+  {%- if ids %} aria-describedby="{{ ids | join(' ') }}"{% endif -%}
+{%- endmacro %}
+
+{% macro _label(name, label, required) -%}
+  <label for="{{ name }}">{{ label }}{% if required %} <span class="required">(required)</span>{% endif %}</label>
+{%- endmacro %}
+
+{#
+  A one-line box. size="short" makes it narrower. inputmode="decimal" shows a
+  number keypad on touch screens. suggestions is a list of words offered while typing.
+#}
+{% macro text_field(form, name, label, help=None, required=False, type="text", size="", inputmode="", suggestions=None) %}
+  {% set error = form.errors.get(name) %}
+  <div class="field{% if error %} has-error{% endif %}">
+    {{ _label(name, label, required) }}
+    {% if help %}<p class="help" id="{{ name }}-help">{{ help }}</p>{% endif %}
+    <input type="{{ type }}" id="{{ name }}" name="{{ name }}" value="{{ form.raw(name) }}"
+      {%- if size %} class="{{ size }}"{% endif %}
+      {%- if inputmode %} inputmode="{{ inputmode }}"{% endif %}
+      {%- if suggestions %} list="{{ name }}-suggestions" autocomplete="off"{% endif %}
+      {%- if error %} aria-invalid="true"{% endif %}{{ _describedby(name, help, error) }}>
+    {% if suggestions %}
+      <datalist id="{{ name }}-suggestions">
+        {% for suggestion in suggestions %}<option value="{{ suggestion }}">{% endfor %}
+      </datalist>
+    {% endif %}
+    {% if error %}<p class="error" id="{{ name }}-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{#
+  A password box. What was typed is never filled back in, even when the form has problems.
+  autocomplete tells the browser's password keeper what this is: "current-password"
+  to sign in, "new-password" for a new one.
+#}
+{% macro password_field(form, name, label, autocomplete, help=None) %}
+  {% set error = form.errors.get(name) %}
+  <div class="field{% if error %} has-error{% endif %}">
+    {{ _label(name, label, False) }}
+    {% if help %}<p class="help" id="{{ name }}-help">{{ help }}</p>{% endif %}
+    <input type="password" id="{{ name }}" name="{{ name }}" autocomplete="{{ autocomplete }}" maxlength="200"
+      {%- if error %} aria-invalid="true"{% endif %}{{ _describedby(name, help, error) }}>
+    {% if error %}<p class="error" id="{{ name }}-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{# An amount of money. Shown with a "$" in front of the box. #}
+{% macro money_field(form, name, label, help=None, required=False) %}
+  {% set error = form.errors.get(name) %}
+  <div class="field{% if error %} has-error{% endif %}">
+    {{ _label(name, label, required) }}
+    {% if help %}<p class="help" id="{{ name }}-help">{{ help }}</p>{% endif %}
+    <div class="money-box">
+      <span aria-hidden="true">$</span>
+      <input type="text" id="{{ name }}" name="{{ name }}" value="{{ form.raw(name) }}" class="short" inputmode="decimal"
+        {%- if error %} aria-invalid="true"{% endif %}{{ _describedby(name, help, error) }}>
+    </div>
+    {% if error %}<p class="error" id="{{ name }}-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{# A rent's late fee. Left empty, they're the defaults (views/leases.py). #}
+{% macro late_fee_fields(form) %}
+  <div class="field-row">
+    {{ text_field(form, "late_percent", "Late fee (% of the rent)", size="short", inputmode="decimal", help="Use 0 for no late fee.") }}
+    {{ text_field(form, "late_after_days", "Once it's this many days late", size="short", inputmode="numeric", help="The late fee is added once, on that day.") }}
+  </div>
+{% endmacro %}
+
+{% macro textarea_field(form, name, label, help=None, required=False, rows=3) %}
+  {% set error = form.errors.get(name) %}
+  <div class="field{% if error %} has-error{% endif %}">
+    {{ _label(name, label, required) }}
+    {% if help %}<p class="help" id="{{ name }}-help">{{ help }}</p>{% endif %}
+    <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+      {%- if error %} aria-invalid="true"{% endif %}{{ _describedby(name, help, error) }}>{{ form.raw(name) }}</textarea>
+    {% if error %}<p class="error" id="{{ name }}-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{#
+  A drop-down list. options is a list of (value, text) pairs. Or pass groups, a list
+  of (group heading, options) pairs, to show the choices under headings.
+  disabled=True greys it out so it can't be changed (and it isn't sent with the form);
+  value then sets the choice it shows, in place of the one in the form.
+#}
+{% macro select_field(form, name, label, options=None, groups=None, help=None, required=False, blank="— Choose —", value=None, disabled=False) %}
+  {% set error = form.errors.get(name) %}
+  {% set chosen = (form.raw(name) if value is none else value) | string %}
+  <div class="field{% if error %} has-error{% endif %}">
+    {{ _label(name, label, required) }}
+    {% if help %}<p class="help" id="{{ name }}-help">{{ help }}</p>{% endif %}
+    <select id="{{ name }}" name="{{ name }}"
+      {%- if disabled %} disabled{% endif %}
+      {%- if error %} aria-invalid="true"{% endif %}{{ _describedby(name, help, error) }}>
+      {% if blank is not none %}<option value="">{{ blank }}</option>{% endif %}
+      {% if groups is not none %}
+        {% for heading, group_options in groups %}
+          {% if heading %}<optgroup label="{{ heading }}">{% endif %}
+            {% for value, text in group_options %}
+              <option value="{{ value }}"{% if chosen == value | string %} selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+          {% if heading %}</optgroup>{% endif %}
+        {% endfor %}
+      {% else %}
+        {% for value, text in options or [] %}
+          <option value="{{ value }}"{% if chosen == value | string %} selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+      {% endif %}
+    </select>
+    {% if error %}<p class="error" id="{{ name }}-error">{{ error }}</p>{% endif %}
+  </div>
+{% endmacro %}
+
+{# The LLCs at the top of a menu that can show a whole LLC, with values such as llc-3. #}
+{% macro llc_options(llcs, chosen) %}
+  {% if llcs %}
+    <optgroup label="LLCs">
+      {% for llc in llcs %}<option value="llc-{{ llc.id }}"{% if chosen == "llc-" ~ llc.id %} selected{% endif %}>{{ llc.name }}</option>{% endfor %}
+    </optgroup>
+  {% endif %}
+{% endmacro %}
+
+{# The options of a menu of properties, grouped by LLC (records.property_choices). prefix goes before each value. #}
+{% macro property_options(groups, chosen, prefix="") %}
+  {% for heading, options in groups %}
+    {% if heading %}<optgroup label="{{ heading }}">{% endif %}
+    {% for value, text in options %}<option value="{{ prefix }}{{ value }}"{% if chosen|string == prefix ~ value %} selected{% endif %}>{{ text }}</option>{% endfor %}
+    {% if heading %}</optgroup>{% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{# Shown at the top of a form that has problems, so she knows to look below. #}
+{% macro form_problems(form) %}
+  {% if not form.is_valid %}
+    <div class="message message-error" role="alert">Nothing was saved yet. Please fix the problems marked in red below.</div>
+  {% endif %}
+{% endmacro %}
+
+{#
+  The small label above the heading of a page about one record, such as
+  "Property" or "Lease", so she always knows what kind of thing she's looking at.
+#}
+{% macro record_kind(kind) %}
+  <p class="record-kind">{{ kind }}</p>
+{% endmacro %}
+
+{# The heading of a list page, with its "Add" button. #}
+{% macro list_header(title, add_url, add_label) %}
+  <div class="page-header">
+    <h1>{{ title }}</h1>
+    {% if add_url %}<a class="button" href="{{ add_url }}">{{ add_label }}</a>{% endif %}
+  </div>
+{% endmacro %}
+
+{#
+  The search box at the top of a list page. The caller's block content goes
+  inside the form, for extra filters such as drop-down lists.
+#}
+{% macro search_box(action, search, placeholder) %}
+  <form class="search" method="get" action="{{ action }}" role="search">
+    <label for="q" class="visually-hidden">Search</label>
+    <input type="search" id="q" name="q" value="{{ search }}" placeholder="{{ placeholder }}">
+    {% if caller %}{{ caller() }}{% endif %}
+    <button type="submit" class="button">Search</button>
+    {% if search %}<a href="{{ action }}">Clear search</a>{% endif %}
+  </form>
+{% endmacro %}
+
+{# A small form with one button, for actions such as Archive or End lease. #}
+{% macro action_button(url, label, style="button-secondary") %}
+  <form method="post" action="{{ url }}" class="inline">
+    <button type="submit" class="button {{ style }}">{{ label }}</button>
+  </form>
+{% endmacro %}

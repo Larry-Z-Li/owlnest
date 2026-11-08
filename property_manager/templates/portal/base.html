@@ -1,0 +1,28 @@
+{#
+  The tenant portal's pages: simple, for phones. They show her business name
+  (from Settings), never the app's own name, and never the app's menus.
+#}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}{% endblock %} · {{ landlord_name or "Tenant portal" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
+</head>
+<body class="portal">
+  <header class="portal-header">
+    <span class="portal-name">{{ landlord_name or "Tenant portal" }}</span>
+    {% if landlord_phone %}<a class="portal-call" href="tel:{{ landlord_phone }}">Call {{ landlord_phone }}</a>{% endif %}
+  </header>
+
+  <main class="portal-main">
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="message message-{{ category }}" role="status">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

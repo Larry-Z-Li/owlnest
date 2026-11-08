@@ -1,0 +1,3540 @@
+/*
+  Property Manager styles. One plain file, no frameworks.
+  Text is large and colors are strong, so every screen is easy to read.
+*/
+
+/* Plus Jakarta Sans, kept in static/fonts (license: OFL-plus-jakarta-sans.txt there), so pages
+   don't depend on another website. Chinese text uses the computer's own font.
+   font-display: optional means a page never switches fonts after it's drawn (which made the
+   text jump): if the font isn't ready in time, that page keeps the computer's own font.
+   Browsers keep the font for a year (see FONT_CACHE_SECONDS), so it's nearly always ready. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: optional;
+  src: url("fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: optional;
+  src: url("fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --text: #172b45;
+  --muted: #4f6280;
+  --page: #f3f6fb;
+  --card: #ffffff;
+  --border: #dce4ef;
+  --field-border: #8a96a3;
+  --brand: #1d4e89;
+  --brand-dark: #153a66;
+  --focus: #f0b429;
+  --success-bg: #e3f4e8;
+  --success-text: #1b5e30;
+  --warning-bg: #fff3cd;
+  --warning-text: #664d03;
+  --error-bg: #fde8e8;
+  --error-text: #a61b1b;
+  /* Light tints with a matching darker color, for the round icon "chips" on Home. */
+  --sky: #e4effc;
+  --indigo: #3a49b0;
+  --indigo-tint: #e8eafc;
+  --teal: #17687a;
+  --teal-tint: #dff2f5;
+  --gold: #f2c14e;
+  --gold-text: #7a5600;
+  --gold-tint: #fdf3d6;
+  --good: #17532f;
+  /* The faint dots on the blue header. */
+  --dots: radial-gradient(rgba(255, 255, 255, 0.09) 1.6px, transparent 1.7px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* (Styles such as .button set a display, which would otherwise show a hidden element.) */
+[hidden] {
+  display: none !important;
+}
+
+/* Always leave room for the scrollbar, so the page doesn't shift sideways between short and long pages. */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--page);
+}
+
+a {
+  color: var(--brand);
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 8px 0 24px;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+h3 {
+  font-size: 20px;
+  margin: 28px 0 8px;
+}
+
+/* ---------- Header ---------- */
+
+.topbar {
+  background-color: var(--brand);
+  background-image: var(--dots);
+  background-size: 22px 22px;
+  color: #ffffff;
+}
+
+/* First row: the app's icon and name, then the alert count and smaller links. */
+.topbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px 10px;
+}
+
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+/* The logo: white, with gold on the owl and the word "Nest". */
+.topbar .brand img {
+  display: block;
+  width: auto;
+  height: 44px;
+}
+
+.topbar-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+
+.utility-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.utility-nav a {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.utility-nav a:hover,
+.utility-nav a.current {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* "3 need attention": yellow, or red when something is late or overdue. */
+.alert-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: #ffd76a;
+  color: #4a3500;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.alert-pill.urgent {
+  background: #e5484d;
+  color: #ffffff;
+}
+
+.alert-pill:hover {
+  filter: brightness(1.05);
+  text-decoration: underline;
+}
+
+/* Second row: the everyday screens. The current one is a white tab that joins the page. */
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Every tab is equally bold, so moving the highlight doesn't make the tabs shift. */
+.main-nav a {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 9px 16px 10px;
+  border-radius: 12px 12px 0 0;
+}
+
+.main-nav a:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.main-nav a.current {
+  background: var(--page);
+  color: var(--brand);
+}
+
+/* ---------- Page layout ---------- */
+
+/* Every page's contents are the same width. */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px rgba(23, 43, 69, 0.04);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Folder locations can be long; let them wrap anywhere. */
+.path {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Messages ---------- */
+
+.message {
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border-left: 6px solid;
+}
+
+.message-success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.message-warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.message-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.message a {
+  color: inherit;
+  font-weight: 700;
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.required {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.help {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  max-width: 560px;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+input.short {
+  max-width: 260px;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* A drop-down that can't be changed, such as a transaction's property and purpose when they come from its request. */
+select:disabled {
+  background: #eef0f3;
+  color: var(--muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
+.has-error input,
+.has-error select,
+.has-error textarea {
+  border: 2px solid var(--error-text);
+}
+
+.error {
+  color: var(--error-text);
+  font-weight: 700;
+  margin: 6px 0 0;
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 20px;
+  border: 2px solid var(--brand);
+  border-radius: 12px;
+  background: var(--brand);
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+.button-secondary {
+  background: #ffffff;
+  color: var(--brand);
+}
+
+.button-secondary:hover {
+  background: #eef3fa;
+  color: var(--brand-dark);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.button-row form {
+  margin: 0;
+}
+
+/* ---------- Page headings ---------- */
+
+.page-header,
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.page-header h1,
+.section-header h2 {
+  margin: 0;
+}
+
+.subtitle {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.75em;
+}
+
+.breadcrumb {
+  margin: 0 0 8px;
+}
+
+/* "Needs attention" at the top of a property's page: no Dismiss, it stays until it's taken care of. */
+.property-warnings ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.property-warnings li {
+  margin-bottom: 6px;
+}
+
+.property-warnings li form.inline {
+  display: inline;
+  margin-left: 6px;
+}
+
+/* Restore and Delete forever side by side, the same size. */
+table.archived .row-actions form + form {
+  margin-left: 8px;
+}
+
+/* "3 beds · 2.5 baths · 1,916 sq ft" under a property's name. */
+.property-facts {
+  margin: -4px 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ---------- A property's photos: a slideshow under its name ---------- */
+
+.slideshow {
+  position: relative;
+  margin: 0 0 24px;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+}
+
+/* The photos side by side, scrolling one at a time (swipe on a phone; static/slideshow.js for the buttons). */
+.slides {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.slides::-webkit-scrollbar {
+  display: none;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: clamp(240px, 42vw, 440px);
+  margin: 0;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: var(--sky);
+}
+
+/* Behind each photo, the same photo blurred and faded over light blue, so the space
+   around a photo takes on its own colors. (It's bigger than the slide, so the blur
+   doesn't fade out at the edges.) */
+.slide-backdrop {
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(28px) saturate(1.2);
+  opacity: 0.55;
+}
+
+/* The whole photo shows, upright or sideways. */
+.slide-photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.slide-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--brand);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.slide-button:hover {
+  background: #ffffff;
+}
+
+.slide-previous {
+  left: 14px;
+}
+
+.slide-next {
+  right: 14px;
+}
+
+.slide-count {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  margin: 0;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(18, 53, 95, 0.85);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* "Edit photos", at the slideshow's top right corner. */
+.slideshow-edit {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* No photos yet: the property's drawing of a house instead. */
+.slideshow-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 240px;
+  padding-top: 40px;
+}
+
+.slideshow-empty > svg {
+  width: 300px;
+  max-width: 100%;
+  height: 160px;
+}
+
+.slideshow-empty-text {
+  margin: 4px 0 18px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* The Photos page: every photo in a grid, each with its Remove button. */
+.photo-manage {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.photo-manage img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.photo-manage-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* A big figure, such as a home's estimated value. */
+.big-number {
+  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* The label above a heading that says what kind of record the page is about. */
+.record-kind {
+  margin: 0 0 2px;
+  color: var(--brand);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.record-kind + h1 {
+  margin-top: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.group-heading {
+  margin-top: 28px;
+}
+
+/* ---------- Search ---------- */
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search input[type="search"] {
+  flex: 1 1 280px;
+  max-width: 480px;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 6px;
+}
+
+.search select,
+.search input[type="date"] {
+  width: auto;
+}
+
+.search label {
+  margin: 0;
+}
+
+/* ---------- Tables ---------- */
+
+table.list {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 12px;
+}
+
+table.list th,
+table.list td {
+  text-align: left;
+  padding: 12px 18px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: middle;
+}
+
+table.list th {
+  border-bottom-color: var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+table.list tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* A table inside a card doesn't need a second box around it. */
+.card table.list {
+  border: none;
+  border-radius: 0;
+}
+
+/* A wide table that scrolls sideways (the report) mustn't clip itself, or its first column can't stay put. */
+.table-scroll table.list {
+  border-collapse: collapse;
+  overflow: visible;
+}
+
+/* Several tables in a row (such as vendors grouped by trade) line up when their columns are equal. */
+table.same-columns {
+  table-layout: fixed;
+}
+
+table.same-columns td {
+  overflow-wrap: anywhere;
+}
+
+table.list tbody tr:hover {
+  background: #f7f9fc;
+}
+
+.number {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.row-actions a + a {
+  margin-left: 12px;
+}
+
+.empty {
+  background: var(--card);
+  border: 1px dashed var(--field-border);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+/* ---------- Record details ---------- */
+
+dl.details {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr;
+  gap: 10px 20px;
+  margin: 0;
+}
+
+dl.details dt {
+  font-weight: 700;
+}
+
+dl.details dd {
+  margin: 0;
+}
+
+.multiline {
+  white-space: pre-line;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  background: #e7ebf0;
+  color: var(--text);
+}
+
+.tag-active {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.tag-warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+ul.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+ul.counts strong {
+  font-size: 28px;
+}
+
+.problem-list li {
+  margin-bottom: 6px;
+}
+
+/* ---------- More form pieces ---------- */
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 20px 4px;
+  margin: 0 0 20px;
+  max-width: 620px;
+}
+
+legend {
+  font-weight: 700;
+  padding: 0 6px;
+}
+
+input.medium {
+  max-width: 400px;
+}
+
+input.tiny {
+  max-width: 100px;
+}
+
+.money-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+form.inline {
+  display: inline;
+  margin: 0;
+}
+
+.button-small {
+  padding: 4px 14px;
+  font-size: 16px;
+}
+
+.message-with-button {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Hidden on screen, but read out by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- "Close the app" and "Sign out" buttons in the header ---------- */
+
+.close-app {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The name of whoever is signed in, next to "Sign out". */
+.signed-in-as {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 15px;
+}
+
+.close-app button {
+  font: inherit;
+  font-size: 15px;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.close-app button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ---------- The sign-in page ---------- */
+
+.sign-in {
+  max-width: 440px;
+  margin: 32px auto;
+}
+
+/* A label, box and button on one line (such as renaming a category). */
+.inline-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.inline-row label {
+  margin: 0;
+}
+
+/* ---------- Receipts ---------- */
+
+.receipt-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.receipt-option {
+  border: 1px dashed var(--field-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #fafbfc;
+}
+
+.receipt-option input[type="file"] {
+  font: inherit;
+  font-size: 16px;
+  max-width: 100%;
+}
+
+fieldset.receipt {
+  max-width: 760px;
+}
+
+.receipt-preview img {
+  display: block;
+  max-width: 320px;
+  max-height: 320px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+label.checkbox {
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+label.checkbox input {
+  width: 20px;
+  height: 20px;
+}
+
+table.list tfoot th,
+table.list tfoot td {
+  background: #eef2f7;
+  border-bottom: none;
+}
+
+.tag-open {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.tag-scheduled {
+  background: #e3ecf8;
+  color: var(--brand-dark);
+}
+
+.tag-done {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* ---------- Status menus: a request's colored status tag, as a menu (templates/_status.html) ---------- */
+
+.status-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.status-pick {
+  position: relative;
+  padding: 0;
+  transition: background-color 0.3s, color 0.3s, opacity 0.2s;
+}
+
+.status-pick:hover {
+  box-shadow: 0 0 0 2px rgba(31, 41, 51, 0.12);
+}
+
+.status-pick:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.status-pick select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 2px 32px 2px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.status-pick select:focus {
+  outline: none; /* (the tag around it shows it instead) */
+}
+
+/* (On Windows, the list that drops down takes the tag's colors unless told otherwise.) */
+.status-pick option {
+  background: #ffffff;
+  color: var(--text);
+}
+
+/* The little arrow that says it's a menu. */
+.status-pick::after {
+  content: "";
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.status-menu.saving .status-pick {
+  opacity: 0.6;
+}
+
+/* A row closing up after its request leaves the list (static/status.js). */
+.closing {
+  overflow: hidden;
+}
+
+/* "… is now closed. Undo", at the bottom of the window. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 10;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  margin: 0;
+  transform: translateX(-50%);
+  box-shadow: 0 8px 28px rgba(31, 41, 51, 0.22);
+  animation: toast-in 0.25s ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pick,
+  .toast {
+    transition: none;
+    animation: none;
+  }
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.totals strong {
+  display: block;
+  font-size: 26px;
+}
+
+/* ---------- Help page ---------- */
+
+.help-topics ul {
+  columns: 2 280px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.card li {
+  margin-bottom: 6px;
+}
+
+.card h3:first-child {
+  margin-top: 0;
+}
+
+.language-switch {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  font-size: 18px;
+  margin: 0;
+}
+
+/* ---------- Invoices ---------- */
+
+/* Description, amount and button side by side. */
+.line-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 16px;
+  margin: 0;
+}
+
+.line-form .field {
+  margin-bottom: 12px;
+}
+
+.line-form .button {
+  margin-bottom: 12px;
+}
+
+.tag-sent,
+.tag-partially-paid {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.tag-paid {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* ---------- Tabs (Rent payments / Other income) ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.tabs a {
+  padding: 8px 18px;
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -2px;
+}
+
+.tabs a.current {
+  background: var(--card);
+  border-color: var(--border);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ---------- Reports ---------- */
+
+/* Wide tables scroll sideways instead of squashing. */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.report-table {
+  font-size: 14px;
+}
+
+.report-table th,
+.report-table td {
+  padding: 7px 8px;
+  white-space: nowrap;
+}
+
+.report-table tbody th {
+  text-align: left;
+  font-weight: 400;
+  background: transparent;
+  white-space: normal;
+  min-width: 110px;
+}
+
+.report-heading th {
+  background: #eef2f7 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.report-total th,
+.report-total td {
+  font-weight: 700 !important;
+  border-top: 2px solid var(--field-border);
+}
+
+.report-net th,
+.report-net td {
+  font-weight: 700 !important;
+  background: #f3f7ee;
+}
+
+.card.report {
+  max-width: none;
+}
+
+.export-form label.checkbox {
+  margin: 0;
+}
+
+.export-form select {
+  width: auto;
+}
+
+/* ---------- Home (the dashboard) ---------- */
+
+/* The blue band under the header. Its last 64px are the page's color, so the tiles overlap its edge. */
+.hero {
+  background-color: var(--page);
+  background-image: var(--dots), linear-gradient(var(--brand), var(--brand));
+  background-size: 22px 22px, 100% calc(100% - 64px);
+  background-repeat: repeat, no-repeat;
+  color: #ffffff;
+  border-top: 1px solid var(--page);
+}
+
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 16px 0;
+}
+
+.hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px 40px;
+}
+
+.hero-text {
+  flex: 1 1 420px;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.hero p {
+  margin: 0;
+}
+
+.hero-date,
+.hero-label,
+.hero-notes {
+  color: #c9d8ee;
+}
+
+.hero-date {
+  margin-bottom: 16px !important;
+}
+
+.hero-label {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* The one big number on Home. */
+.hero-figure {
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #ffffff;
+}
+
+.hero-notes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 10px !important;
+  font-size: 15px;
+}
+
+.change-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.change-pill.up {
+  background: #d9f2e3;
+  color: #14532d;
+}
+
+.change-pill.down {
+  background: #fde8e8;
+  color: var(--error-text);
+}
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.hero-buttons .button,
+.button .icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button-light {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--brand);
+}
+
+.button-light:hover {
+  background: var(--sky);
+  border-color: var(--sky);
+  color: var(--brand-dark);
+}
+
+.button-outline-light {
+  background: transparent;
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.button-outline-light:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #ffffff;
+}
+
+.hero-houses {
+  flex: 0 1 420px;
+  width: 420px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* The four tiles: rent, net cash flow, open repairs, needs attention. */
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.tile {
+  flex: 1 1 230px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(23, 43, 69, 0.1);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.tile:hover {
+  border-color: var(--brand);
+}
+
+.tile-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.tile-value {
+  margin-top: 4px;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.tile-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.tile-note.good {
+  color: var(--good);
+  font-weight: 700;
+}
+
+/* How much of the month's rent is in: the track is a lighter step of the same blue. */
+.meter {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: #dbe7f6;
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--brand);
+}
+
+/* A round icon with a light tint behind it. */
+.chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.chip-sky { background: var(--sky); color: var(--brand); }
+.chip-indigo { background: var(--indigo-tint); color: var(--indigo); }
+.chip-teal { background: var(--teal-tint); color: var(--teal); }
+.chip-gold { background: var(--gold-tint); color: var(--gold-text); }
+.chip-red { background: var(--error-bg); color: var(--error-text); }
+
+main.home {
+  padding-top: 32px;
+}
+
+.home-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.home-main {
+  flex: 999 1 560px;
+  min-width: 0;
+}
+
+.home-side {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.home-columns h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-columns h2 .icon {
+  color: var(--brand);
+}
+
+.home-section {
+  margin-bottom: 28px;
+}
+
+.section-links {
+  font-weight: 700;
+}
+
+/* A property's card, with a drawing of a house until it has a photo. */
+/* A grid, so a card alone on the last row keeps the same width as the others. */
+/* The tray the homes slide in, which shows where the window ends. */
+.home-window {
+  padding: 12px 12px 6px;
+  border-radius: 18px;
+  background: #e4ebf4;
+}
+
+.home-window .top-slider::-webkit-scrollbar-track,
+.home-window .home-cards::-webkit-scrollbar-track {
+  background: #d3dde9;
+}
+
+/* Every home, in two rows that slide sideways. */
+.home-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, auto);
+  grid-auto-columns: 260px;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.home-card-photo {
+  display: block;
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.home-card {
+  position: relative;
+  min-width: 0;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.home-card:hover {
+  border-color: var(--brand);
+}
+
+.drawing {
+  display: block;
+}
+
+.drawing svg {
+  display: block;
+  width: 100%;
+  height: 130px;
+}
+
+.drawing-0 { background: var(--sky); }
+.drawing-1 { background: var(--indigo-tint); }
+.drawing-2 { background: var(--teal-tint); }
+
+.home-card-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.tag-vacant {
+  background: #fdeccf;
+  color: #7a4a00;
+}
+
+.home-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 18px 18px;
+}
+
+.home-card-name {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.home-card-address {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.home-card-tenant {
+  margin-top: 6px;
+  font-size: 16px;
+}
+
+.home-card-figures {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e6ecf4;
+}
+
+.home-card-figures > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-card-figures .figure-right {
+  align-items: flex-end;
+}
+
+.figure-label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.change {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.change.up {
+  color: var(--good);
+}
+
+.change.down {
+  color: var(--error-text);
+}
+
+/* Open repair requests on Home: the request on the left, its status menu on the right. */
+/* Home's open requests: sections like "Needs attention", with a status menu on each. */
+table.request-rows {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+table.request-rows td {
+  padding: 14px 20px;
+  border-bottom: 0.5px solid #c8ccd2;
+  vertical-align: middle;
+}
+
+table.request-rows tr:last-child td {
+  border-bottom: none;
+}
+
+table.request-rows .home-cell {
+  gap: 12px;
+}
+
+table.request-rows .chip {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+}
+
+table.request-rows .row-link {
+  font-weight: 800;
+}
+
+table.request-rows .status-cell {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.see-all-in-card {
+  margin: 0 12px 12px;
+}
+
+/* ---------- The Transactions, Properties and Maintenance lists ---------- */
+
+.list-summary {
+  margin: 2px 0 0;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.list-summary strong,
+.month-totals strong {
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.list-summary .money-in,
+.month-totals .money-in {
+  color: var(--success-text);
+}
+
+.filters-clear {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.button-round-on-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-thumb-link {
+  flex: 0 0 auto;
+  display: block;
+  line-height: 0;
+}
+
+/* Clicking anywhere on a row opens it (static/row_links.js). */
+table.row-links tbody tr {
+  cursor: pointer;
+}
+
+table.row-links .row-link {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.status-cell {
+  white-space: nowrap;
+}
+
+/* The filters with a small label over each one (Properties). */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.filter-bar label {
+  flex: 1 1 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filter-bar .filter-wide {
+  flex: 3 1 280px;
+}
+
+.filter-bar select,
+.filter-bar input[type="search"] {
+  width: 100%;
+  max-width: none;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+/* A home's small photo (or drawing) and its name, in the Properties list. */
+.home-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-thumb {
+  flex: 0 0 76px;
+  display: block;
+  width: 76px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.home-thumb.drawing svg {
+  width: 76px;
+  height: 56px;
+}
+
+.home-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.home-line {
+  font-size: 15px;
+}
+
+/* The tabs and menus above the Maintenance list. Every tab is equally bold, so none shifts. */
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.list-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #e4ecf6;
+}
+
+.list-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  color: #33475f;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.list-tabs a[aria-current] {
+  background: var(--card);
+  color: var(--text);
+}
+
+.filter-menus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-menus select {
+  width: auto;
+  max-width: 230px;
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 16px;
+}
+
+.requests-list td,
+.properties-list td:nth-child(2) {
+  font-size: 16px;
+}
+
+.requests-list .row-link {
+  font-size: 17px;
+}
+
+.requests-list .home-line {
+  font-size: 15px;
+}
+
+/* The round filters above Transactions. */
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.filter-pills input[type="search"],
+.filter-pills select {
+  max-width: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #c3cfdd;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.filter-pills input[type="search"] {
+  flex: 2 1 240px;
+  min-width: 0;
+}
+
+.more-filters {
+  flex: 3 1 420px;
+  min-width: 0;
+}
+
+/* (Only phones have a "Filters" button to fold the menus away; see the end of this section.) */
+.more-filters > summary {
+  display: none;
+}
+
+.more-filters-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.more-filters-fields select {
+  flex: 1 1 130px;
+  width: auto;
+  min-width: 0;
+}
+
+.period-dates {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.period-dates label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.period-dates input {
+  width: auto;
+}
+
+/* Transactions: a group for each month, which folds away. */
+.month {
+  margin-bottom: 14px;
+}
+
+.month > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 6px 4px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.month > summary::-webkit-details-marker {
+  display: none;
+}
+
+.month:not([open]) > summary {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.month-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 20px;
+}
+
+.month-name .icon {
+  color: var(--brand);
+  transition: transform 0.15s;
+}
+
+.month[open] .month-name .icon {
+  transform: rotate(90deg);
+}
+
+.month-totals {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.month[open] .when-closed,
+.month:not([open]) .when-open {
+  display: none;
+}
+
+.month-rows {
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+}
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #eef2f7;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.ledger-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-row:hover {
+  background: #f7f9fc;
+}
+
+.ledger-text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ledger-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ledger-what,
+.ledger-meta {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ledger-meta {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.ledger-amount {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* A small tag beside a row's title. */
+.tag-check,
+.tag-bofa,
+.tag-ai,
+.tag-small {
+  flex: 0 0 auto;
+  padding: 1px 8px;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tag-check {
+  background: #fff1c7;
+  color: #6a4a00;
+}
+
+.tag-bofa {
+  background: #e3ebf9;
+  color: #123a7a;
+}
+
+/* A transaction she typed in that a bank entry is linked to with AI: green, like "Linked with AI" on From the bank. */
+.tag-ai {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* A row that's a link, beside a button of its own. */
+.ledger-row-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.chip-green {
+  background: #dcf1e4;
+  color: var(--good);
+}
+
+.chip-slate {
+  background: #e7ebf0;
+  color: var(--muted);
+}
+
+/* A lease's Rent list, and the reminder at the top of its page. */
+.rent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* (The amounts in these tables stay on one line, but the words under them can wrap.) */
+.rent-list .home-line,
+.rent-due p {
+  margin: 0 0 10px;
+}
+
+.rent-due .button-row {
+  margin: 0;
+}
+
+/* A heading with its buttons staying beside it, however long the words under it get. */
+.page-header-together {
+  flex-wrap: nowrap;
+}
+
+/* The buttons at the right of a page's heading. */
+.page-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-with-count {
+  position: relative;
+}
+
+.button-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* A white dollar sign on a blue circle (on "Property transactions"). */
+.button-dollar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #ffffff;
+}
+
+.button-count {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* The "From the bank" page. */
+.bank-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bank-status .icon {
+  flex: 0 0 auto;
+  color: var(--good);
+}
+
+.form-note {
+  margin: 0 0 14px;
+  font-size: 15px;
+}
+
+.bank-row {
+  scroll-margin-top: 12px;
+}
+
+/* Its button, or its "In Transactions" tag, in the same width, so the amounts line up. */
+.bank-action {
+  flex: 0 0 210px;
+  text-align: center;
+}
+
+.bank-action .icon {
+  vertical-align: -2px;
+}
+
+/* Between the amount and the button: a check mark on an entry that's been checked (Overridden). */
+.bank-check {
+  flex: 0 0 22px;
+  display: flex;
+  justify-content: center;
+  color: var(--good);
+}
+
+.bank-checked {
+  display: flex;
+}
+
+.bank-row-entered strong,
+.bank-row-entered .ledger-amount {
+  color: var(--muted);
+}
+
+.bank-problem,
+.bank-connect {
+  margin-bottom: 16px;
+}
+
+.bank-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bank-empty h2,
+.bank-empty p,
+.bank-empty form {
+  margin: 0;
+}
+
+.add-account-choice h2 {
+  overflow-wrap: anywhere;
+}
+
+.add-account-choice form {
+  margin: 0;
+}
+
+/* The Reminders page. */
+.filter-pills > select {
+  flex: 0 1 280px;
+}
+
+/* Accounts differ only in their last 4 digits, so this menu is as wide as its longest name. */
+.filter-pills > select.account-menu {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+}
+
+.reminder-group {
+  margin-bottom: 22px;
+}
+
+/* (These words wrap, so nothing is cut off, such as an account's last 4 digits.) */
+.reminder-row .ledger-what,
+.reminder-row .ledger-meta,
+.account-row .ledger-what,
+.account-row .ledger-meta {
+  white-space: normal;
+}
+
+/* The Properties list: one sheet, with a band across it for each LLC. */
+.llc-title {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  min-width: 0;
+}
+
+.llc-rename {
+  display: inline-flex;
+  align-self: center;
+  padding: 6px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.llc-rename:hover {
+  background: rgba(23, 43, 69, 0.08);
+  color: var(--brand);
+}
+
+table.properties-list {
+  table-layout: fixed;
+}
+
+.properties-list thead th:nth-child(1) { width: 42%; }
+.properties-list thead th:nth-child(2) { width: 30%; }
+.properties-list thead th:nth-child(3) { width: 12%; }
+.properties-list thead th:nth-child(4) { width: 16%; }
+
+table.properties-list .llc-band th {
+  padding: 10px 18px;
+  background: #e8edf4;
+  color: var(--text);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.llc-band-inside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px 16px;
+}
+
+.llc-name {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.llc-totals {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 400;
+}
+
+table.row-links tbody tr.llc-band,
+table.row-links tbody tr.llc-no-homes {
+  cursor: default;
+}
+
+table.list tbody tr.llc-no-homes:hover {
+  background: none;
+}
+
+/* A row that opens a longer list, such as all of a home's requests. */
+.see-all {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--page);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.see-all:hover {
+  background: #e7edf5;
+}
+
+.see-all .chip {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+}
+
+.see-all-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.see-all-count {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.see-all > .icon {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.property-llc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* The sliders above and below the report, and Home's homes: the same look, always drawn, since
+   a Mac hides ordinary ones until you scroll. The top one stays in view on the way down the page. */
+.top-slider {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-bottom: 8px;
+}
+
+.top-slider > div {
+  height: 1px;
+}
+
+.top-slider::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar,
+.home-cards::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.top-slider::-webkit-scrollbar-track,
+.table-scroll::-webkit-scrollbar-track,
+.home-cards::-webkit-scrollbar-track {
+  border-radius: 6px;
+  background: #eef2f7;
+}
+
+.top-slider::-webkit-scrollbar-thumb,
+.table-scroll::-webkit-scrollbar-thumb,
+.home-cards::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background: #aab7c7;
+}
+
+.top-slider::-webkit-scrollbar-thumb:hover,
+.table-scroll::-webkit-scrollbar-thumb:hover,
+.home-cards::-webkit-scrollbar-thumb:hover {
+  background: #8a9bb0;
+}
+
+/* (Browsers without those, such as Firefox.) */
+@supports not selector(::-webkit-scrollbar) {
+  .top-slider,
+  .table-scroll,
+  .home-cards {
+    scrollbar-color: #aab7c7 #eef2f7;
+  }
+}
+
+/* The charts under the report. Marks are thin, gridlines faint, and words never wear a mark's color. */
+.chart-section {
+  margin-top: 28px;
+  scroll-margin-top: 12px;
+}
+
+.chart-section > h2 {
+  margin: 0 0 14px;
+}
+
+.chart-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.chart-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+
+.chart-tile strong {
+  font-size: clamp(20px, 5vw, 26px);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chart-tile-label,
+.chart-note,
+.rank-value,
+.plot-tick span,
+.plot-labels {
+  color: var(--muted);
+}
+
+.chart-tile-label {
+  font-size: 15px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
+  gap: 14px;
+}
+
+.chart-card {
+  min-width: 0;
+  margin: 0;
+}
+
+.chart-wide {
+  grid-column: 1 / -1;
+}
+
+.chart-card h3 {
+  margin: 0;
+}
+
+.chart-note {
+  margin: 2px 0 14px;
+  font-size: 15px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 6px 0 12px;
+  padding: 0;
+  font-size: 15px;
+  list-style: none;
+}
+
+.chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-swatch {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.plot-in { background: #2a78d6; }
+.plot-out { background: #eb6834; }
+
+.month-plot {
+  position: relative;
+  height: 260px;
+  margin-left: 52px;
+}
+
+.plot-tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #eef2f7;
+}
+
+.plot-zero {
+  border-top-color: #aab7c7;
+}
+
+.plot-tick span {
+  position: absolute;
+  right: 100%;
+  margin-right: 8px;
+  font-size: 13px;
+  line-height: 1;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.plot-columns,
+.plot-labels {
+  display: flex;
+}
+
+.plot-columns {
+  position: absolute;
+  inset: 0;
+}
+
+.plot-column {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 6px;
+}
+
+.plot-column:hover,
+.plot-column:focus-visible,
+.rank-row:hover,
+.rank-row:focus-visible {
+  background: rgba(23, 43, 69, 0.05);
+}
+
+.plot-bar {
+  position: absolute;
+  left: 50%;
+  width: min(24px, 60%);
+  transform: translateX(-50%);
+}
+
+.plot-bar.plot-in {
+  margin-bottom: 1px;
+  border-radius: 4px 4px 0 0;
+}
+
+.plot-bar.plot-out {
+  margin-top: 1px;
+  border-radius: 0 0 4px 4px;
+}
+
+.plot-labels {
+  margin: 6px 0 0 52px;
+  font-size: 13px;
+}
+
+.plot-labels span {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: visible;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pie-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 24px;
+}
+
+.pie {
+  flex: 0 0 190px;
+  width: 190px;
+  height: 190px;
+}
+
+.pie path:hover,
+.pie path:focus-visible {
+  opacity: 0.8;
+  outline: none;
+}
+
+.pie-legend {
+  flex: 1 1 180px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pie-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 15px;
+}
+
+.pie-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pie-amount {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.rank-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: minmax(0, 215px) minmax(40px, 1fr) 96px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.rank-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-track {
+  position: relative;
+  display: block;
+  height: 16px;
+}
+
+.rank-bar {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+.rank-both .rank-bar {
+  position: absolute;
+  top: 0;
+}
+
+.rank-both .rank-left {
+  border-radius: 4px 0 0 4px;
+}
+
+.rank-zero {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  border-left: 1px solid #aab7c7;
+}
+
+.rank-value {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.chart-tip {
+  position: absolute;
+  z-index: 20;
+  max-width: 260px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 6px 18px rgba(23, 43, 69, 0.14);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.chart-tip-title {
+  font-weight: 700;
+}
+
+/* The filters above the lists: every box and menu the same height, in every browser.
+   (Safari draws an ordinary menu thinner than asked, whatever it's told, so these are drawn here.) */
+.filter-bar select,
+.filter-bar input[type="search"],
+.filter-bar input[type="date"],
+.filter-pills select,
+.filter-pills input[type="search"],
+.filter-pills input[type="date"],
+.filter-menus select {
+  box-sizing: border-box;
+  height: 44px;
+  min-height: 44px;
+  background-color: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.filter-bar input[type="date"] {
+  width: 100%;
+  max-width: none;
+  padding: 0 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+}
+
+.filter-pills input[type="date"] {
+  padding: 0 14px;
+  border: 1px solid #c3cfdd;
+  border-radius: 999px;
+}
+
+.filter-menus select {
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+}
+
+.filter-bar select,
+.filter-pills select,
+.filter-menus select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%234f6280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 13px center;
+  background-repeat: no-repeat;
+}
+
+/* The Notes page. */
+.notes-list {
+  padding: 0;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.note:last-child {
+  border-bottom: none;
+}
+
+.note p {
+  margin: 0;
+}
+
+/* Narrow windows: rows stack instead of being wide tables. */
+@media (max-width: 760px) {
+  table.row-links,
+  table.row-links tbody {
+    display: block;
+  }
+
+  table.row-links thead {
+    display: none;
+  }
+
+  table.row-links tbody tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  table.row-links tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  /* On a phone, an LLC's band still runs from edge to edge. */
+  table.row-links tbody tr.llc-band {
+    display: block;
+    padding: 0;
+  }
+
+  table.properties-list .llc-band th {
+    display: block;
+    padding: 10px 14px;
+  }
+
+  .llc-title {
+    flex-wrap: nowrap;
+  }
+
+  table.row-links td {
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  table.row-links td:first-child,
+  table.properties-list td:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  table.requests-list td.muted {
+    display: none;
+  }
+
+  table.row-links td.number {
+    text-align: left !important;
+  }
+
+  table.row-links td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .list-tabs,
+  .filter-menus {
+    flex: 1 1 100%;
+  }
+
+  .list-tabs a {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 0 10px;
+  }
+
+  .filter-menus select {
+    flex: 1 1 140px;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+/* Phones: "Add a transaction" is a round + button, and the menus fold under "Filters". */
+@media (max-width: 600px) {
+  .wide-only {
+    display: none;
+  }
+
+  .page-header-together .button-round-on-phone {
+    flex: 0 0 48px;
+  }
+
+  /* A chart's rows: the name and amount, with the bar on its own line under them. */
+  .rank-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 10px;
+  }
+
+  .rank-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  /* Only every other month's name fits under the bars. */
+  .plot-labels span:nth-child(even) {
+    visibility: hidden;
+  }
+
+  /* On a round button, the count is a badge on its corner. */
+  .button-round-on-phone .button-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  /* Home's homes: one column in a window of a fixed height, sliding up and down. */
+  .home-window {
+    padding: 10px 6px 10px 10px;
+  }
+
+  .home-cards {
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: max-content;
+    max-height: 600px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 6px 0 0;
+    scroll-snap-type: y proximity;
+  }
+
+  /* The button goes on its own line under the row's words. */
+  .bank-row {
+    flex-wrap: wrap;
+  }
+
+  .bank-row .ledger-text {
+    flex: 1 1 0;
+  }
+
+  .bank-action {
+    flex: 1 1 100%;
+  }
+
+  .bank-action .button {
+    display: block;
+    text-align: center;
+  }
+
+  .ledger-row-main {
+    gap: 12px;
+  }
+
+  /* A row: the type and its tag, then the words, then where and when. */
+  .ledger-row {
+    gap: 12px;
+    padding: 10px 14px;
+  }
+
+  .ledger-title {
+    flex-wrap: wrap;
+    gap: 0 8px;
+  }
+
+  .ledger-what {
+    display: contents;
+  }
+
+  .ledger-title .tag {
+    order: 1;
+  }
+
+  .ledger-details {
+    order: 2;
+    flex: 1 1 100%;
+    overflow: hidden;
+    min-width: 0;
+    color: var(--muted);
+    font-size: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ledger-meta {
+    white-space: normal;
+  }
+
+  /* A table in a card has smaller gaps on a phone, so it fits inside the card. */
+  .card table.list:not(.report-table) th,
+  .card table.list:not(.report-table) td {
+    padding: 10px 6px;
+  }
+
+  /* A row's buttons may wrap, and the Archive's two stack, so these tables fit on the screen. */
+  table.list .row-actions {
+    white-space: normal;
+  }
+
+  table.archived th,
+  table.archived td {
+    padding: 10px 12px;
+  }
+
+  table.archived .row-actions form {
+    display: block;
+  }
+
+  table.archived .row-actions form + form {
+    margin: 6px 0 0;
+  }
+
+  .button-round-on-phone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .button-round-on-phone span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .more-filters {
+    flex: 0 0 auto;
+  }
+
+  .more-filters[open] {
+    flex: 1 1 100%;
+  }
+
+  .more-filters > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid #c3cfdd;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .more-filters > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .more-filters[open] > summary {
+    margin-bottom: 10px;
+  }
+}
+
+/* "Needs attention": a light blue band on top, then one row per item. */
+.attention {
+  padding: 0;
+  overflow: hidden;
+}
+
+.attention-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--sky);
+  color: var(--brand);
+}
+
+.attention-head h2 {
+  margin: 0;
+  font-size: 21px;
+  color: var(--text);
+}
+
+.count-badge {
+  margin-left: auto;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.alert-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each one is a section of the list, and the whole section is the link. */
+.alert-list .alert-panel {
+  margin: 0; /* (Not the space under a card's list items, which would show as a white band.) */
+  border-bottom: 0.5px solid #c8ccd2;
+}
+
+.alert-panel:hover {
+  background: #f7f9fc;
+}
+
+.alert-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.alert-link .chip {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+}
+
+.alert-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.alert-title {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.alert-title .tag {
+  margin-left: 2px;
+  vertical-align: 2px;
+}
+
+.alert-detail {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.alert-button {
+  display: block;
+  padding: 0 20px 14px 68px;
+}
+
+.alert-button form.inline {
+  margin: 0;
+}
+
+.attention-empty,
+.attention-foot {
+  margin: 0;
+  padding: 14px 20px;
+}
+
+.attention-foot p {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.attention-foot .button-row {
+  margin-bottom: 0;
+}
+
+/* The two buttons share a row, or each fills it when the panel is too narrow for both. */
+.attention-foot .button-row .button {
+  flex: 1 1 auto;
+  text-align: center;
+}
+
+/* When the records were last backed up, under "Needs attention". */
+.backup-note {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.backup-note > p:first-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.backup-note > p:first-child .icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--good);
+}
+
+/* Phones and narrow windows: no houses in the band, a smaller big number, tiles two by two. */
+@media (max-width: 760px) {
+  .hero-houses {
+    display: none;
+  }
+
+  .hero-figure {
+    font-size: 44px;
+  }
+
+  .tile {
+    flex-basis: 150px;
+    padding: 16px;
+  }
+
+  .tile-value {
+    font-size: 26px;
+  }
+
+  /* On a phone, what needs attention comes before the properties. */
+  .home-side {
+    order: -1;
+  }
+}
+
+.tag-late {
+  background: #d64545;
+  color: #ffffff;
+}
+
+/* ---------- Rent from a bank file ---------- */
+
+.nowrap {
+  white-space: nowrap;
+}
+
+details.deposits summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--brand-dark);
+  margin-bottom: 12px;
+}
+
+table.list td .error {
+  margin: 4px 0 0;
+}
+
+/* Wide enough to show the unit and the tenant's name. */
+select.lease-choice {
+  min-width: 16em;
+  max-width: 24em;
+}
+
+/* ---------- Lease documents ---------- */
+
+.document-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.document-list li {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.document-list li:last-child {
+  border-bottom: none;
+}
+
+.document-preview {
+  flex: 0 0 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.document-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.document-icon {
+  font-weight: 700;
+  color: #b3261e;
+  font-size: 18px;
+}
+
+.document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.document-upload {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+}
+
+/* ---------- Maintenance requests (her Requests screen and the tenant portal) ---------- */
+
+.tag-urgent {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* The messages about a request: hers on a light blue background, the tenant's on white. */
+.conversation {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+.conversation-message {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+.conversation-message.from-landlord {
+  background: #eef3fa;
+}
+
+.conversation-message p {
+  margin: 0 0 6px;
+}
+
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.photo-grid img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.status-form {
+  margin-top: 8px;
+}
+
+.status-form select {
+  width: auto;
+}
+
+.reply-form {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+/* The portal link on a tenant's page. */
+.portal-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.portal-link-row input {
+  flex: 1 1 320px;
+  font-family: Menlo, Consolas, monospace;
+  font-size: 15px;
+}
+
+/* ---------- The tenant portal (on tenants' phones) ---------- */
+
+.portal-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px 16px;
+  background: var(--brand);
+}
+
+.portal-header a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.portal-header .portal-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.portal-main {
+  max-width: 720px;
+}
+
+.portal-emergency {
+  border-color: var(--error-text);
+  background: var(--error-bg);
+}
+
+.portal-emergency h2 {
+  color: var(--error-text);
+}
+
+.portal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.portal-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.portal-list li:last-child {
+  border-bottom: none;
+}
+
+/* A radio button with its text, easy to tap. */
+label.choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 10px 0;
+  font-weight: 400;
+}
+
+label.choice input {
+  flex: 0 0 auto;
+  margin-top: 6px;
+  width: 20px;
+  height: 20px;
+}
+
+.portal-leave {
+  margin: 8px 0 32px;
+}
+
+/* Phones: less padding, details stacked instead of side by side, full-width boxes. */
+@media (max-width: 600px) {
+  .portal .card {
+    padding: 16px;
+  }
+
+  .portal dl.details {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .portal dl.details dd {
+    margin-bottom: 10px;
+  }
+
+  .portal input[type="text"],
+  .portal textarea,
+  .portal select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .photo-grid img {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+/* Buttons right under a record's details (such as the current lease on a property's page). */
+dl.details + .button-row {
+  margin-top: 20px;
+}
+
+/* One extension of a lease, with its files. */
+.extension + .extension {
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+  padding-top: 8px;
+}
+
+/* For actions that can't be undone, such as "Delete forever". */
+.button-danger {
+  background: var(--error-text);
+  border-color: var(--error-text);
+  color: #ffffff;
+}
+
+.button-danger:hover {
+  background: #7f1414;
+}
+
+/* Money in and money out in lists. */
+.money-out {
+  color: var(--error-text);
+}
+
+.money-in {
+  color: var(--success-text);
+}
+
+/* The cash-flow report: the first column stays in view while scrolling sideways through months. */
+.report-table tbody th,
+.report-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  min-width: 220px;
+}
+
+.report-table .report-heading th {
+  position: static;
+}
+
+.report-table .report-net th {
+  background: #f3f7ee;
+}
+
+/* A bank entry linked with AI: its green tag, and the red Unlink under it. */
+.bank-linked {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+button.tag-button {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.tag-button:hover {
+  text-decoration: underline;
+}

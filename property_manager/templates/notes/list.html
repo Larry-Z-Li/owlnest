@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import textarea_field, action_button, form_problems %}
+{% block title %}Notes{% endblock %}
+
+{% block content %}
+<h1>Notes</h1>
+
+<section class="card">
+  {{ form_problems(form) }}
+  <form method="post" action="{{ url_for('notes.create') }}">
+    {{ textarea_field(form, "text", "New note", required=True) }}
+    <button type="submit" class="button">Add note</button>
+  </form>
+</section>
+
+{% if notes %}
+  <section class="card notes-list">
+    {% for note in notes %}
+      <div class="note">
+        <div>
+          <p class="multiline">{{ note.text }}</p>
+          <p class="muted home-line">{{ note.created_at|nice_datetime }}</p>
+        </div>
+        {{ action_button(url_for("notes.archive", note_id=note.id), "Archive", "button-small button-secondary") }}
+      </div>
+    {% endfor %}
+  </section>
+{% else %}
+  <p class="empty">No notes yet.</p>
+{% endif %}
+{% endblock %}

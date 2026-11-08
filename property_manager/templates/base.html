@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="{% block page_language %}en{% endblock %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} · {{ app_name }}</title>
+  {# Ask for the font right away, so it's ready before the text is drawn (see style.css). #}
+  <link rel="preload" href="{{ url_for('static', filename='fonts/plus-jakarta-sans-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-row">
+      <a class="brand" href="{{ url_for('home.index') }}">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="{{ app_name }}" height="44">
+      </a>
+      {# (plain_layout: the sign-in page, or an error for someone not signed in. No menus.) #}
+      {% if not plain_layout %}
+      <div class="topbar-tools">
+        {% if alert_count %}
+          <a class="alert-pill{% if alert_urgent %} urgent{% endif %}" href="{{ url_for('reminders.index') }}">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+            {{ alert_count }} need{{ "s" if alert_count == 1 else "" }} attention
+          </a>
+        {% endif %}
+        <nav class="utility-nav" aria-label="More">
+          {% for endpoint, label in utility_items %}
+            {% set is_current = endpoint.split('.')[0] in (request.blueprint, nav_parents.get(request.blueprint)) %}
+            <a href="{{ url_for(endpoint) }}"{% if is_current %} class="current" aria-current="page"{% endif %}>{{ label }}</a>
+          {% endfor %}
+        </nav>
+        {% if signed_in_as %}
+          <form method="post" action="{{ url_for('sign_in.sign_out') }}" class="close-app">
+            <span class="signed-in-as">{{ signed_in_as }}</span>
+            <button type="submit">Sign out</button>
+          </form>
+        {% endif %}
+        {% if can_close_app %}
+          <form method="post" action="{{ url_for('home.shutdown') }}" class="close-app"
+                onsubmit="return confirm('Close {{ app_name }}? Everything is already saved.');">
+            <button type="submit">Close the app</button>
+          </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% if not plain_layout %}
+    <nav class="main-nav" aria-label="Main menu">
+      {% for endpoint, label in nav_items %}
+        {% set is_current = endpoint.split('.')[0] in (request.blueprint, nav_parents.get(request.blueprint)) %}
+        <a href="{{ url_for(endpoint) }}"{% if is_current %} class="current" aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </header>
+
+  {# A band right under the header, full width (Home's blue band with the tiles). #}
+  {% block hero %}{% endblock %}
+
+  <main class="{% block main_class %}{% endblock %}">
+    {# If the most recent backup failed, say so on every page until one works. #}
+    {% if last_backup_result and not last_backup_result.succeeded %}
+      <div class="message message-error" role="alert">
+        <strong>The last backup didn't work.</strong> {{ last_backup_result.error }}
+        <a href="{{ url_for('settings.index') }}#backups">Go to Settings</a> and click “Back up now” to try again.
+      </div>
+    {% endif %}
+
+    {# Short messages such as "Saved." after a form is submitted. #}
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      {% if category == "undo" %}
+        {# After something is moved to the Archive: say so, with an Undo button. #}
+        <div class="message message-success message-with-button" role="status">
+          <span>{{ message.text }}</span>
+          <form method="post" action="{{ url_for('archive.restore', kind=message.kind, record_id=message.id) }}" class="inline"
+                {%- if message.question %} onsubmit='return confirm({{ message.question|tojson }});'{% endif %}>
+            <button type="submit" class="button button-small">Undo</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="message message-{{ category }}" role="status">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{{ url_for('static', filename='row_links.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='remember_place.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

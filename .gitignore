@@ -1,0 +1,18 @@
+# Python's private copy for this app, made by the setup script
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+# Messages from the app when it runs without a window
+logs/
+
+# Her spreadsheets hold private financial records; never commit them.
+*.xlsx
+*.xls
+excel/
+
+# Where the server is, and its secret key: only for the app files sent to her computers.
+connection.json
+# The app files made by make_app_package.py
+app-package/

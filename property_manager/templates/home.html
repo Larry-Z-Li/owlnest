@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% from "_macros.html" import action_button %}
+{% from "_status.html" import status_menu %}
+{% from "_icons.html" import icon, kind_icons %}
+{% import "_home.html" as drawings %}
+{% block title %}Home{% endblock %}
+{% block main_class %}home{% endblock %}
+
+{# ---------- The blue band: greeting, what her homes are worth, and the four tiles ---------- #}
+{% block hero %}
+<section class="hero" aria-label="At a glance">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-text">
+        <h1>{{ greeting }}</h1>
+        <p class="hero-date">{{ "{:%A}".format(today) }}, {{ today|nice_date }}</p>
+        {% if total_value %}
+          {% set homes = total_value.names|length %}
+          <p class="hero-label">
+            {% if homes == 1 %}{{ total_value.names[0] }} is worth about
+            {%- elif homes < property_count %}{{ homes }} of your homes are worth about
+            {%- else %}Your {{ homes }} homes are worth about{% endif %}
+          </p>
+          <p class="hero-figure">{{ total_value.cents|dollars }}</p>
+          <p class="hero-notes">
+            {% if total_value.change_cents is not none %}
+              {% set up = total_value.change_cents >= 0 %}
+              <span class="change-pill {{ 'up' if up else 'down' }}">
+                {{ icon("up" if up else "down", 16) }}
+                {{ "+" if up else "−" }}{{ total_value.change_cents|abs|dollars }} since {{ total_value.previous_asked_at|nice_date }}
+              </span>
+            {% endif %}
+            {% if total_value.own_count == homes %}<span>{{ "Your own value" if homes == 1 else "Your own values" }}, updated {{ total_value.newest_asked_at|nice_date }}</span>
+            {%- else %}<span>{{ "An estimate" if homes == 1 else "Estimates" }} from RentCast{% if total_value.own_count %}, and {{ total_value.own_count }} of your own{% endif %}, updated {{ total_value.newest_asked_at|nice_date }}</span>{% endif %}
+          </p>
+        {% else %}
+          <p class="hero-label">Your properties</p>
+          <p class="hero-figure">{{ property_count }} {{ "home" if property_count == 1 else "homes" }}</p>
+          <p class="hero-notes"><span>{{ leased_count }} with a current lease</span></p>
+        {% endif %}
+        <div class="hero-buttons">
+          <a class="button button-light" href="{{ url_for('transactions.new') }}">{{ icon("plus", 18) }} Add a transaction</a>
+          <a class="button button-outline-light" href="{{ url_for('maintenance.new') }}">{{ icon("wrench", 18) }} Add a repair request</a>
+        </div>
+      </div>
+      {{ drawings.houses() }}
+    </div>
+
+    <div class="tiles">
+      <a class="tile" href="{{ url_for('transactions.index') }}">
+        <span class="tile-label"><span class="chip chip-sky">{{ icon("dollar") }}</span> Rent in {{ "{:%B}".format(today) }}</span>
+        <span class="tile-value">{{ rent.received_cents|dollars }}</span>
+        {% if rent.expected_cents %}
+          <span class="meter" role="img" aria-label="{{ rent.received_cents|dollars }} of {{ rent.expected_cents|dollars }} received"><span style="width: {{ rent.percent }}%"></span></span>
+          {% if rent.received_cents >= rent.expected_cents %}
+            <span class="tile-note good">{{ icon("check", 16) }} All of this month's rent is in</span>
+          {% else %}
+            <span class="tile-note">of {{ rent.expected_cents|dollars }} a month from current leases</span>
+          {% endif %}
+        {% else %}
+          <span class="tile-note">No current leases</span>
+        {% endif %}
+      </a>
+      <a class="tile" href="{{ url_for('reports.index') }}">
+        <span class="tile-label"><span class="chip chip-indigo">{{ icon("chart") }}</span> Net cash flow, {{ today.year }}</span>
+        <span class="tile-value">{{ net_cash_flow_cents|dollars }}</span>
+        <span class="tile-note">January 1 to today</span>
+      </a>
+      <a class="tile" href="{{ url_for('maintenance.index') }}">
+        <span class="tile-label"><span class="chip chip-teal">{{ icon("wrench") }}</span> Open repairs</span>
+        <span class="tile-value">{{ open_requests|length }}</span>
+        {% set in_progress = open_requests|selectattr("status", "equalto", "In progress")|list|length %}
+        <span class="tile-note">{% if not open_requests %}Nothing to fix{% elif in_progress %}{{ in_progress }} in progress{% else %}None in progress yet{% endif %}</span>
+      </a>
+      <a class="tile" href="{{ url_for('bank.index') }}">
+        <span class="tile-label"><span class="chip chip-green">{{ icon("bank") }}</span> New bank deposits</span>
+        <span class="tile-value">{{ new_deposits }}</span>
+        <span class="tile-note">From latest fetch</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="home-columns">
+
+  <div class="home-main">
+    {# ---------- Properties ---------- #}
+    <section class="home-section">
+      <div class="section-header">
+        <h2>{{ icon("house", 24) }} Your properties</h2>
+      </div>
+      {% if cards %}
+        <div class="home-window">
+        {# A second slider above the homes, kept in step with the one below them (static/top_slider.js). #}
+        <div class="top-slider" data-scrolls="home-cards" hidden><div></div></div>
+        <div class="home-cards" id="home-cards">
+          {% for card in cards %}
+            {% set lease = card.lease %}
+            <a class="home-card" href="{{ url_for('properties.detail', property_id=card.property.id) }}">
+              {% if card.photo %}
+                <img class="home-card-photo" src="{{ url_for('files.show', attachment_id=card.photo.id) }}" alt="" loading="lazy">
+              {% else %}
+                <span class="drawing drawing-{{ card.drawing }}">{{ drawings.house(card.drawing) }}</span>
+              {% endif %}
+              <span class="tag home-card-tag {{ 'tag-active' if lease else 'tag-vacant' }}">{{ "Leased" if lease else "Vacant" }}</span>
+              <span class="home-card-body">
+                <span class="home-card-name">{{ card.property.nickname }}</span>
+                {% if card.property.address.strip() %}<span class="home-card-address">{{ card.property.address.strip().splitlines()[0] }}</span>{% endif %}
+                <span class="home-card-tenant">
+                  {%- if lease %}{{ lease.tenant_names }} · {{ "until " ~ lease.end_date|nice_date if lease.end_date else "month-to-month" }}
+                  {%- else %}No current lease{% endif -%}
+                </span>
+                <span class="home-card-figures">
+                  <span>
+                    <span class="figure-label">Est. value</span>
+                    <strong>{{ card.value.value_cents|dollars if card.value else "—" }}</strong>
+                    {% if card.change_percent is not none %}
+                      <span class="change {{ 'up' if card.change_percent >= 0 else 'down' }}">{{ "{:+.1f}".format(card.change_percent) }}% since {{ "{:%b}".format(card.since) }}</span>
+                    {% endif %}
+                  </span>
+                  <span class="figure-right">
+                    <span class="figure-label">Rent</span>
+                    <strong>{{ lease.rent_cents|money if lease else "—" }}</strong>
+                  </span>
+                </span>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+        </div>
+      {% else %}
+        <p class="card">To get started, <a href="{{ url_for('properties.new') }}">add a property</a>.</p>
+      {% endif %}
+    </section>
+
+    {# ---------- Repair requests ---------- #}
+    <section class="card attention requests">
+      <div class="attention-head">
+        {{ icon("wrench", 22) }}
+        <h2>Open repair requests</h2>
+        {% if open_requests %}<span class="count-badge" data-counts='{{ ["Open", "In progress"]|tojson }}'>{{ open_requests|length }}</span>{% endif %}
+      </div>
+      {% if open_requests %}
+        {# Still a table: static/status.js fades a closed request's row away, and Undo brings it back. #}
+        <table class="list row-links request-rows" data-shows='{{ ["Open", "In progress"]|tojson }}' data-empty="No open requests." data-empty-class="attention-empty">
+          <tbody>
+            {% for item in open_requests[:10] %}
+              <tr>
+                <td>
+                  <span class="home-cell">
+                    <span class="chip chip-teal">{{ icon("wrench", 18) }}</span>
+                    <span class="alert-text">
+                      <span class="alert-title"><a class="row-link" href="{{ url_for('maintenance.edit', request_id=item.id) }}">{{ item.title }}</a>{% if item.unread %} <span class="tag tag-active tag-small">New from tenant</span>{% endif %}</span>
+                      <span class="alert-detail">{{ item.property.nickname }} · reported {{ item.reported_on|nice_date }}{% if item.company %} · {{ item.company }}{% endif %}</span>
+                    </span>
+                  </span>
+                </td>
+                <td class="status-cell">{{ status_menu(item, request.full_path) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% if open_requests|length > 10 %}
+          <a class="see-all see-all-in-card" href="{{ url_for('maintenance.index') }}">
+            <span class="see-all-name">See all</span>
+            <span class="see-all-count">{{ open_requests|length }}</span>
+            {{ icon("right", 18) }}
+          </a>
+        {% endif %}
+      {% else %}
+        <p class="attention-empty">No open requests.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="home-side">
+    {# ---------- Needs attention ---------- #}
+    <section class="card attention" id="alerts">
+      <div class="attention-head">
+        {{ icon("bell", 22) }}
+        <h2>Needs attention</h2>
+        {% if alerts %}<span class="count-badge">{{ alerts|length }}</span>{% endif %}
+      </div>
+      {% if alerts %}
+        {# The whole panel opens its page. (A button of its own sits beside the link, not inside it.) #}
+        <ul class="alert-list">
+          {% for alert in alerts %}
+            {% set name, chip = kind_icons.get(alert.kind, ("bell", "chip-gold")) %}
+            <li class="alert-panel">
+              <a class="alert-link" href="{{ alert.link }}">
+                <span class="chip {{ 'chip-red' if alert.urgent else 'chip-gold' if alert.yellow else chip }}">{{ icon(name, 18) }}</span>
+                <span class="alert-text">
+                  <span class="alert-title">{{ alert.link_text }}{% if alert.urgent %} <span class="tag tag-late tag-small">Now</span>{% elif alert.yellow %} <span class="tag tag-warning tag-small">Due</span>{% endif %}</span>
+                  {% if alert.second_line %}<span class="alert-detail">{{ alert.second_line }}</span>{% endif %}
+                </span>
+              </a>
+              {% if alert.button %}
+                {% set label, address = alert.button %}
+                <span class="alert-button">{{ action_button(address, label, "button-small") }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="attention-empty">Nothing needs attention right now.</p>
+      {% endif %}
+      <div class="attention-foot">
+        <p class="muted">Rent that's due and unpaid, leases and insurances ending within 60 days, and your own reminders (such as property tax) show up here.</p>
+        <div class="button-row">
+          <a class="button button-small button-secondary" href="{{ url_for('reminders.index') }}">All reminders</a>
+          <a class="button button-small" href="{{ url_for('reminders.new') }}">Add a reminder</a>
+        </div>
+      </div>
+    </section>
+
+    {# ---------- Backups ---------- #}
+    <section class="backup-note">
+      <p>
+        {{ icon("check", 18) }}
+        {% if last_backup %}
+          <span>Your records were last backed up on <strong>{{ last_backup|nice_datetime }}</strong> ({{ last_backup|days_ago }}).</span>
+        {% else %}
+          <span>No backup has been made yet.</span>
+        {% endif %}
+      </p>
+      {% if last_backup_result and last_backup_result.succeeded and last_backup_result.extra_copy_error %}
+        <div class="message message-warning">{{ last_backup_result.extra_copy_error }}</div>
+      {% endif %}
+      {% if on_server %}
+        <p class="muted">Your records are kept on the app's server, and each computer with the app saves a copy every day in its Documents folder.</p>
+      {% elif not settings.backup_folder %}
+        <p class="muted">Tip: backups are also copied to your Documents folder. For a copy off this computer, choose iCloud Drive or Dropbox in <a href="{{ url_for('settings.index') }}#backups">Settings</a>.</p>
+      {% endif %}
+    </section>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='top_slider.js') }}" defer></script><script src="{{ url_for('static', filename='status.js') }}" defer></script>{% endblock %}

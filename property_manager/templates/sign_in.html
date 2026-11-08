@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import password_field %}
+{% block title %}Sign in{% endblock %}
+
+{% block content %}
+<section class="card sign-in">
+  <h1>Sign in <span lang="zh-Hans" class="subtitle">登录</span></h1>
+  <form method="post" action="{{ url_for('sign_in.sign_in') }}">
+    <input type="hidden" name="next" value="{{ next_page }}">
+    {% set error = form.errors.get("name") %}
+    <div class="field{% if error %} has-error{% endif %}">
+      <label for="name">Your name <span lang="zh-Hans">名字</span></label>
+      <input type="text" id="name" name="name" value="{{ form.raw('name') }}" autocomplete="username"
+             autocapitalize="none" spellcheck="false" autofocus
+             {%- if error %} aria-invalid="true" aria-describedby="name-error"{% endif %}>
+      {% if error %}<p class="error" id="name-error">{{ error }}</p>{% endif %}
+    </div>
+    {{ password_field(form, "password", "Password 密码", "current-password") }}
+    <button type="submit" class="button">Sign in</button>
+  </form>
+  <p class="muted">Forgot your password? Ask someone else who can sign in to set a new one in Settings.</p>
+</section>
+{% endblock %}

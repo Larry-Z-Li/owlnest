@@ -1,0 +1,10 @@
+# Files Render never needs to build the server. Her spreadsheets and the key stay out.
+.git
+.venv
+.pytest_cache
+**/__pycache__
+logs
+app-package
+connection.json
+*.xlsx
+*.xls

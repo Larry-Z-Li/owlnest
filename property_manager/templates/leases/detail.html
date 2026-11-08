@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% from "_macros.html" import action_button, record_kind %}
+{% from "_attachments.html" import file_list, upload_form %}
+{% block title %}Lease · {{ lease.tenant_names }}{% endblock %}
+
+{% block content %}
+<p class="breadcrumb">
+  <a href="{{ url_for('properties.detail', property_id=lease.property.id) }}">← Back to {{ lease.property.nickname }}</a>
+  {% if lease.status == "Ended" %} · <a href="{{ url_for('properties.previous_leases', property_id=lease.property.id) }}">Previous leases</a>{% endif %}
+</p>
+{{ record_kind("Lease") }}
+<div class="page-header">
+  <h1>{{ lease.tenant_names }} <span class="subtitle">{{ lease.property.nickname }}</span></h1>
+  <div class="actions">
+    <a class="button button-secondary" href="{{ url_for('leases.edit', lease_id=lease.id) }}">Edit lease</a>
+    {% if lease.status == "Active" %}
+      <a class="button button-secondary" href="{{ url_for('leases.extend_form', lease_id=lease.id) }}">Extend lease</a>
+      <a class="button button-secondary" href="{{ url_for('leases.end_form', lease_id=lease.id) }}">End lease</a>
+    {% elif not revive_problem %}
+      {{ action_button(url_for("leases.revive", lease_id=lease.id), "Revive lease", "") }}
+    {% endif %}
+    {{ action_button(url_for("leases.archive", lease_id=lease.id), "Archive lease") }}
+  </div>
+</div>
+
+{% if lease.status == "Ended" %}
+  <div class="message message-warning">
+    This lease ended on {{ lease.ended_on|nice_date }} and is one of {{ lease.property.nickname }}'s previous leases.
+    {% if revive_problem %}It can't be revived: {{ revive_problem }}{% else %}If it was ended by mistake, click “Revive lease”: it becomes current again, and the tenants' portal link works again.{% endif %}
+  </div>
+{% endif %}
+
+{# Rent still owed: stays until it's paid in full, or she waives it (see rent_ledger.py). #}
+{% for month in owing %}
+  <div class="message {{ 'message-error' if month.past_grace else 'message-warning' }} rent-due">
+    <p>
+      {% if month.rent_owed_cents %}
+        <strong>{{ month.name }} rent isn't fully paid.</strong>
+        It was due on {{ month.due_on|nice_date }}{% if month.days_late %}, {{ month.days_late }} {{ "day" if month.days_late == 1 else "days" }} ago{% else %} (today){% endif %}.
+      {% else %}
+        <strong>The {{ month.name }} late fee isn't paid.</strong>
+        The rent was paid in full on {{ month.paid_on|nice_date }}, {{ month.days_late }} days late.
+      {% endif %}
+      <br>
+      Rent {{ month.rent_cents|money }}{% if month.rent_paid_cents %} · paid {{ month.rent_paid_cents|money }}{% endif %}{% if month.forgiven_cents %} · waived {{ month.forgiven_cents|money }}{% endif %}
+      {%- if month.fee_cents %} · late fee {{ month.fee_cents|money }}{% elif month.fee_waived %} · late fee waived{% endif %}
+      {%- if month.fee_paid_cents %} · fee paid {{ month.fee_paid_cents|money }}{% endif %} ·
+      <strong>{{ month.owed_cents|money }} still owed</strong>
+      {% if month.fee_comes_on %}<br>A {{ month.possible_fee_cents|money }} late fee is added on {{ month.fee_comes_on|nice_date }} if it isn't paid in full by then.{% endif %}
+    </p>
+    <div class="button-row">
+      {% if not month.fee_waived and month.possible_fee_cents %}
+        <form method="post" action="{{ url_for('leases.rent_waive', lease_id=lease.id) }}" class="inline">
+          <input type="hidden" name="month" value="{{ month.month.strftime('%Y-%m') }}">
+          <input type="hidden" name="what" value="fee">
+          <button type="submit" class="button button-small button-secondary">Waive late fee</button>
+        </form>
+      {% endif %}
+      {% if month.rent_owed_cents %}
+        <form method="post" action="{{ url_for('leases.rent_waive', lease_id=lease.id) }}" class="inline"
+              onsubmit='return confirm({{ ("Waive the " ~ month.rent_owed_cents|money ~ " of rent still owed for " ~ month.name ~ ", and any late fee?")|tojson }});'>
+          <input type="hidden" name="month" value="{{ month.month.strftime('%Y-%m') }}">
+          <input type="hidden" name="what" value="rest">
+          <button type="submit" class="button button-small button-secondary">Waive rest of rent</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endfor %}
+
+<section class="card">
+  <dl class="details">
+    <dt>Status</dt><dd><span class="tag {{ 'tag-active' if lease.status == 'Active' else '' }}">{{ "Current" if lease.status == "Active" else "Ended" }}</span></dd>
+    <dt>Tenants</dt><dd>{{ lease.tenant_names }}</dd>
+    {% if lease.tenant_phone %}<dt>Phone</dt><dd>{{ lease.tenant_phone }}</dd>{% endif %}
+    {% if lease.tenant_email %}<dt>Email</dt><dd><a href="mailto:{{ lease.tenant_email }}">{{ lease.tenant_email }}</a></dd>{% endif %}
+    <dt>Start</dt><dd>{{ lease.start_date|nice_date }}</dd>
+    <dt>End</dt><dd>{{ lease.end_date|nice_date if lease.end_date else "Month-to-month" }}</dd>
+    {% if lease.ended_on %}<dt>Ended on</dt><dd>{{ lease.ended_on|nice_date }}</dd>{% endif %}
+    <dt>Security deposit</dt><dd>{{ lease.deposit_cents|money if lease.deposit_cents else "—" }}</dd>
+    {% if lease.notes %}<dt>Notes</dt><dd class="multiline">{{ lease.notes }}</dd>{% endif %}
+  </dl>
+</section>
+
+{# The rent by date. Which one applies is worked out from today's date (Lease.rent_cents). #}
+<section class="card" id="rent">
+  <div class="section-header">
+    <h2>Rent rate</h2>
+    <a class="button button-secondary" href="{{ url_for('leases.rent_new', lease_id=lease.id) }}">Add a rent change</a>
+  </div>
+  <table class="list rent-list">
+    <thead>
+      <tr>
+        <th scope="col">Starts on</th>
+        <th scope="col" class="number">Monthly rent</th>
+        <th scope="col"><span class="visually-hidden">Edit or remove</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for period in lease.rent_periods %}
+        <tr>
+          <td>
+            {{ period.starts_on|nice_date }}
+            {% if period is sameas lease.current_rent_period %}<span class="tag tag-active">In effect</span>
+            {% elif period.starts_on > lease.current_rent_period.starts_on %}<span class="tag tag-scheduled">{{ "Upcoming" if not lease.ended_on else "Not reached" }}</span>{% endif %}
+          </td>
+          <td class="number">
+            {{ period.amount_cents|money }}
+            <br><span class="muted home-line">{% if period.late_percent %}{{ "%g"|format(period.late_percent) }}% after {{ period.late_after_days }} days late{% else %}No late fee{% endif %}</span>
+          </td>
+          <td>
+            <div class="rent-actions">
+              <a class="button button-small button-secondary" href="{{ url_for('leases.rent_edit', lease_id=lease.id, period_id=period.id) }}">Edit</a>
+              {% if not loop.first %}
+                <form method="post" action="{{ url_for('leases.rent_remove', lease_id=lease.id, period_id=period.id) }}" class="inline"
+                      onsubmit='return confirm({{ ("Remove the rent from " ~ period.starts_on|nice_date ~ "?")|tojson }});'>
+                  <button type="submit" class="button button-small button-secondary">Remove</button>
+                </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card" id="portal">
+  <h2>Tenant portal</h2>
+  {% if lease.status != "Active" %}
+    <p class="muted">The lease has ended, so the tenants' link shows a “sorry” page. Reviving the lease turns the same link back on.</p>
+  {% elif not portal_link %}
+    <p class="muted">The tenant portal works once the app runs on its server.</p>
+  {% else %}
+    <p>
+      The tenants can send repair requests with photos at this link, and see how they're going. Send it to them by
+      text or email. There's no password, so anyone with the link can use it. It stops working when the lease ends.
+    </p>
+    <div class="portal-link-row">
+      <label for="portal-link" class="visually-hidden">Portal link</label>
+      <input type="text" id="portal-link" value="{{ portal_link }}" readonly onfocus="this.select()">
+      <button type="button" class="button button-small" onclick="navigator.clipboard.writeText(document.getElementById('portal-link').value); this.textContent = 'Copied';">Copy link</button>
+    </div>
+    <div class="button-row">
+      {% if portal_email %}<a class="button button-secondary" href="{{ portal_email }}">Email it to the tenants</a>{% endif %}
+      <form method="post" action="{{ url_for('leases.new_portal_link', lease_id=lease.id) }}" class="inline"
+            onsubmit="return confirm('Make a new link? The old link will stop working, so you will need to send the new one.');">
+        <button type="submit" class="button button-secondary">Make a new link</button>
+      </form>
+    </div>
+  {% endif %}
+</section>
+
+<section class="card" id="walkthroughs">
+  <h2>Walkthroughs</h2>
+  <table class="list">
+    <tbody>
+      {% for kind in walkthrough_kinds %}
+        {% set walkthrough = walkthroughs.get(kind) %}
+        <tr>
+          <td><strong>{{ kind }}</strong><br><span class="muted">{{ "Before the tenants moved in" if kind == "Move-in" else "After the tenants moved out" }}</span></td>
+          <td>
+            {% if walkthrough %}
+              {{ walkthrough.walk_date|nice_date }} · {{ walkthrough.attachments|selectattr("archived_at", "none")|list|length }} files
+            {% else %}
+              <span class="muted">Not done yet</span>
+            {% endif %}
+          </td>
+          <td class="row-actions">
+            <a class="button button-small {{ '' if not walkthrough else 'button-secondary' }}" href="{{ url_for('leases.walkthrough', lease_id=lease.id, kind=kind.lower()) }}">{{ "Open" if walkthrough else "Add " ~ kind.lower() ~ " walkthrough" }}</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="card" id="extensions">
+  <div class="section-header">
+    <h2>Extensions</h2>
+    {% if lease.status == "Active" %}<a class="button button-secondary" href="{{ url_for('leases.extend_form', lease_id=lease.id) }}">Extend lease</a>{% endif %}
+  </div>
+  {% for extension in lease.extensions %}
+    <div class="extension">
+      <h3>
+        Extended to {{ extension.new_end_date|nice_date }}
+        <span class="muted">(was {{ extension.previous_end_date|nice_date if extension.previous_end_date else "month-to-month" }}{% if extension.signed_on %}; signed {{ extension.signed_on|nice_date }}{% endif %})</span>
+      </h3>
+      {% if extension.notes %}<p class="multiline">{{ extension.notes }}</p>{% endif %}
+      {{ file_list(extension.attachments|selectattr("archived_at", "none")|list, "No extension agreement attached yet.") }}
+      {{ upload_form("extension", extension.id, accept, "Add files to this extension") }}
+    </div>
+  {% else %}
+    <p class="muted">This lease hasn't been extended.</p>
+  {% endfor %}
+</section>
+
+<section class="card" id="documents">
+  <h2>Lease documents</h2>
+  <p class="muted">The signed lease and anything else about it.</p>
+  {{ file_list(documents) }}
+  {{ upload_form("lease", lease.id, accept) }}
+</section>
+
+{% endblock %}

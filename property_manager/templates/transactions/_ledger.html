@@ -1,0 +1,28 @@
+{# What Transactions and From the bank share: a list of money, by month. #}
+{% from "_icons.html" import icon %}
+
+{# An amount with its sign: +$3,500.00 or −$186.96. #}
+{% macro signed(cents) -%}
+  {{ "+" if cents > 0 else "−" }}{{ cents|abs|money }}
+{%- endmacro %}
+
+{# A total that's usually positive: $3,500.00 or −$186.96. #}
+{% macro total(cents) -%}
+  {{ "−" if cents < 0 else "" }}{{ cents|abs|money }}
+{%- endmacro %}
+
+{# A month's heading, which folds its rows. "one" and "many": what a row is called. #}
+{% macro month_summary(month, one="transaction", many="transactions") %}
+  <summary>
+    <h2 class="month-name">{{ icon("right", 18) }}{{ month.name }}</h2>
+    <span class="month-totals when-open">
+      <span class="wide-only">In <strong class="money-in">{{ month.in|money }}</strong> ·
+      Out <strong>{{ month.out|abs|money }}</strong> · </span>
+      Net <strong>{{ total(month.in + month.out) }}</strong>
+    </span>
+    <span class="month-totals when-closed">
+      <span class="wide-only">{{ month.rows|length }} {{ one if month.rows|length == 1 else many }} · </span>
+      Net <strong>{{ total(month.in + month.out) }}</strong>
+    </span>
+  </summary>
+{% endmacro %}
